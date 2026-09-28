@@ -1,0 +1,137 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String     @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?    @db.VarChar(255)
+  role          String     @default("USER") // "USER", "ADMIN", "SUPER_ADMIN"
+  isApproved    Boolean    @default(false)  // Required true for ADMIN to log in
+  accounts      Account[]
+  sessions      Session[]
+  bookmarks     Bookmark[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([role])
+  @@index([isApproved])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Post {
+  id            String   @id @default(cuid())
+  title         String   @db.VarChar(255)
+  slug          String   @unique @db.VarChar(191)
+  summary       String   @db.Text
+  content       String   @db.LongText
+  sport         String   @db.VarChar(50) // "football", "nba", "nfl", "ufc"
+  status        String   @default("PUBLISHED") @db.VarChar(20) // "DRAFT" or "PUBLISHED"
+  featuredImage String?  @db.VarChar(500)
+  seoKeywords   String?  @db.Text
+  matchDate     String?  @db.VarChar(100)
+  schemaJson    String?  @db.Text
+  views         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([sport])
+  @@index([status])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  matchSlug String   @db.VarChar(191)
+  sport     String   @db.VarChar(50)
+  title     String   @db.VarChar(255)
+  matchTime String?  @db.VarChar(100)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchSlug])
+}
+
+model SystemSetting {
+  id           String  @id @default("global") @db.VarChar(50)
+  postsPerDay  Int     @default(5)
+  autoPublish  Boolean @default(true)
+  activeSports String  @default("football,nba,nfl,ufc") @db.VarChar(255)
+  affforceUrl  String  @default("https://panel.affforce.com/apply/register-affiliate/") @db.VarChar(500)
+  vpnUrl       String  @default("https://nordvpn.com") @db.VarChar(500)
+  fuboUrl      String  @default("https://www.fubo.tv") @db.VarChar(500)
+}
+
+model Keyword {
+  id          String   @id @default(cuid())
+  keyword     String   @unique @db.VarChar(191)
+  sport       String   @db.VarChar(50)
+  intent      String   @default("COMMERCIAL") @db.VarChar(50) // COMMERCIAL, INFORMATIONAL, NAVIGATIONAL
+  volume      Int      @default(10000)
+  difficulty  String   @default("MEDIUM") @db.VarChar(20) // LOW, MEDIUM, HIGH
+  currentRank Int?     // Google rank position (e.g., 3)
+  bestRank    Int?     // Historic best (e.g., 1)
+  targetSlug  String?  @db.VarChar(191)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sport])
+  @@index([difficulty])
+}
+
+model AffiliatePartner {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(100)
+  slug        String   @unique @db.VarChar(50)
+  targetUrl   String   @db.VarChar(500)
+  category    String   @db.VarChar(50) // CPA Streaming, VPN, Official Pass, Sports Betting
+  payout      String   @db.VarChar(100) // "Up to $50 CPA", "40% Recurring"
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  status      String   @default("ACTIVE") @db.VarChar(20)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
