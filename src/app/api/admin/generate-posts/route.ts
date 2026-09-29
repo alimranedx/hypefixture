@@ -3,14 +3,17 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateDailyHypePosts, saveGeneratedPostsToDatabase } from '@/lib/gemini';
+import { pushToIndexNow, syndicatePost } from '@/lib/syndication';
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
 
-    // Optional check in production: userRole === 'ADMIN'
-    // For seamless testing, allow if session is admin OR allow parameter override
+    if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
+    }
+
     const settings = await prisma.systemSetting.upsert({
       where: { id: 'global' },
       update: {},
@@ -27,14 +30,39 @@ export async function POST(request: NextRequest) {
     const autoPublish = body.autoPublish !== undefined ? body.autoPublish : settings.autoPublish;
 
     const { posts: generated, telemetry } = await generateDailyHypePosts(count, autoPublish);
+
+    if (!generated || generated.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: telemetry.error || 'Gemini AI failed to generate posts. No posts were created.',
+          telemetry,
+        },
+        { status: 400 }
+      );
+    }
+
     const saved = await saveGeneratedPostsToDatabase(generated);
+
+    // 1. Instant IndexNow push to Bing/Yahoo/Yandex
+    if (settings.autoIndexNow) {
+      const siteUrl = process.env.NEXTAUTH_URL || 'https://hypefixture.com';
+      const urls = saved.map((s) => `${siteUrl}/post/${s.slug}`);
+      pushToIndexNow(urls).catch((e) => console.warn('Background IndexNow push error:', e));
+    }
+
+    // 2. Automated Social Syndication (Twitter, Facebook, Pinterest)
+    if (settings.autoShareSocial) {
+      for (const p of saved) {
+        syndicatePost(p.id).catch((e) => console.warn(`Background syndication error for ${p.id}:`, e));
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      message:
-        telemetry.source === 'GOOGLE_GEMINI_LIVE'
-          ? `⚡ Google Gemini 3.8 Flash live generated ${saved.length} fresh articles in ${telemetry.latencyMs}ms!`
-          : `Processed ${saved.length} fresh articles!`,
+      message: `⚡ Google Gemini live generated ${saved.length} fresh articles in ${telemetry.latencyMs}ms!${
+        settings.autoIndexNow ? ' Pushed to IndexNow.' : ''
+      }${settings.autoShareSocial ? ' Syndicated to social media.' : ''}`,
       count: saved.length,
       telemetry,
       posts: saved,

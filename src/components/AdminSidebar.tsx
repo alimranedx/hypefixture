@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
-  Flame,
   LayoutDashboard,
   Sparkles,
   FileText,
@@ -23,6 +23,7 @@ import {
   Tv,
   Radio,
   Sliders,
+  Share2,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -90,6 +91,12 @@ export default function AdminSidebar({
       desc: 'Target keyword rankings',
     },
     {
+      id: 'syndication',
+      name: 'Social & SEO Hub',
+      icon: Share2,
+      desc: 'Auto-share & Instant IndexNow',
+    },
+    {
       id: 'affiliates',
       name: 'Affiliate & EPC Hub',
       icon: DollarSign,
@@ -122,8 +129,14 @@ export default function AdminSidebar({
       {/* Brand Header */}
       <div className="p-5 border-b border-slate-800 flex items-center justify-between">
         <Link href="/admin/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
-            <Flame className="w-6 h-6 text-slate-950 fill-slate-950" />
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
+            <Image
+              src="/logo-icon.png"
+              alt="Hype Fixture Logo"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
@@ -311,8 +324,14 @@ export default function AdminSidebar({
       {/* Mobile Top Navbar with Hamburger */}
       <div className="md:hidden sticky top-0 z-40 bg-slate-950 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
         <Link href="/admin/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-            <Flame className="w-5 h-5 text-slate-950 fill-slate-950" />
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden shadow-md shadow-emerald-500/10">
+            <Image
+              src="/logo-icon.png"
+              alt="Hype Fixture Logo"
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
           </div>
           <span className="font-black text-white text-sm">
             HYPE<span className="text-emerald-400">FIXTURE</span> CMS

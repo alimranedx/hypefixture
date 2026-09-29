@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Flame, ShieldCheck, HelpCircle, ExternalLink } from 'lucide-react';
+import { ShieldCheck, HelpCircle, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -33,9 +34,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand Info */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-                <Flame className="w-5 h-5 text-slate-950 fill-slate-950" />
+            <div className="flex items-center gap-2.5">
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden shadow-md shadow-emerald-500/10">
+                <Image
+                  src="/logo-icon.png"
+                  alt="Hype Fixture Logo"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="text-lg font-black text-white tracking-tight">
                 HYPE<span className="text-emerald-400">FIXTURE</span>

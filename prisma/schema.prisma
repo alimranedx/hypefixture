@@ -74,6 +74,11 @@ model Post {
   matchDate     String?  @db.VarChar(100)
   schemaJson    String?  @db.Text
   views         Int      @default(0)
+  sharedTwitter   Boolean  @default(false)
+  sharedFacebook  Boolean  @default(false)
+  sharedPinterest Boolean  @default(false)
+  indexedBing     Boolean  @default(false)
+  indexedAt       DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -97,12 +102,31 @@ model Bookmark {
 
 model SystemSetting {
   id           String  @id @default("global") @db.VarChar(50)
-  postsPerDay  Int     @default(5)
+  postsPerDay  Int     @default(10)
   autoPublish  Boolean @default(true)
   activeSports String  @default("football,nba,nfl,ufc") @db.VarChar(255)
   affforceUrl  String  @default("https://panel.affforce.com/apply/register-affiliate/") @db.VarChar(500)
   vpnUrl       String  @default("https://nordvpn.com") @db.VarChar(500)
   fuboUrl      String  @default("https://www.fubo.tv") @db.VarChar(500)
+
+  // Automated Social Syndication & Instant SEO Indexing
+  autoShareSocial      Boolean @default(false)
+  autoIndexNow         Boolean @default(true)
+  indexNowKey          String? @db.VarChar(100)
+  
+  // Twitter / X API Credentials
+  twitterApiKey        String? @db.VarChar(255)
+  twitterApiSecret     String? @db.VarChar(255)
+  twitterAccessToken   String? @db.VarChar(255)
+  twitterAccessSecret  String? @db.VarChar(255)
+  
+  // Facebook Graph API
+  facebookPageId       String? @db.VarChar(100)
+  facebookAccessToken  String? @db.Text
+  
+  // Pinterest API
+  pinterestAccessToken String? @db.Text
+  pinterestBoardId     String? @db.VarChar(100)
 }
 
 model Keyword {

@@ -33,6 +33,9 @@ import {
   BarChart3,
   Tag,
   Zap,
+  Share2,
+  Send,
+  Clock,
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 import RichPostEditor from '@/components/RichPostEditor';
@@ -43,7 +46,7 @@ export default function AdminDashboardPage() {
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'ai-studio' | 'posts' | 'keywords' | 'serp' | 'affiliates' | 'security'
+    'overview' | 'ai-studio' | 'posts' | 'keywords' | 'serp' | 'syndication' | 'affiliates' | 'security'
   >('overview');
 
   // Sync tab with URL search parameter if present
@@ -53,7 +56,7 @@ export default function AdminDashboardPage() {
       const tab = params.get('tab');
       if (
         tab &&
-        ['overview', 'ai-studio', 'posts', 'keywords', 'serp', 'affiliates', 'security'].includes(
+        ['overview', 'ai-studio', 'posts', 'keywords', 'serp', 'syndication', 'affiliates', 'security'].includes(
           tab
         )
       ) {
@@ -64,18 +67,31 @@ export default function AdminDashboardPage() {
 
   // State
   const [settings, setSettings] = useState({
-    postsPerDay: 5,
+    postsPerDay: 10,
     autoPublish: true,
     activeSports: 'football,nba,nfl,ufc',
     affforceUrl: 'https://panel.affforce.com/apply/register-affiliate/',
     vpnUrl: 'https://nordvpn.com',
     fuboUrl: 'https://www.fubo.tv',
+    autoShareSocial: false,
+    autoIndexNow: true,
+    indexNowKey: 'hypefixture-indexnow-2026-key',
+    twitterApiKey: '',
+    twitterApiSecret: '',
+    twitterAccessToken: '',
+    twitterAccessSecret: '',
+    facebookPageId: '',
+    facebookAccessToken: '',
+    pinterestAccessToken: '',
+    pinterestBoardId: '',
   });
 
   const [posts, setPosts] = useState<any[]>([]);
   const [keywords, setKeywords] = useState<any[]>([]);
   const [affiliates, setAffiliates] = useState<any[]>([]);
   const [adminsList, setAdminsList] = useState<any[]>([]);
+  const [syndicatingPostId, setSyndicatingPostId] = useState<string | null>(null);
+  const [batchIndexing, setBatchIndexing] = useState(false);
 
   // Filters & Modal
   const [postSearch, setPostSearch] = useState('');
@@ -332,6 +348,74 @@ export default function AdminDashboardPage() {
       if (res.ok) {
         setStatusMessage({ type: 'success', text: data.message });
         loadAllData();
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message });
+    }
+  };
+
+  // Syndicate a single post to all channels
+  const handleSyndicatePost = async (postId: string) => {
+    try {
+      setSyndicatingPostId(postId);
+      const res = await fetch('/api/admin/syndicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatusMessage({
+          type: 'success',
+          text: `Syndicated article! IndexNow: ${data.report?.indexNow?.success ? '✅ Pushed' : '⚠️ ' + (data.report?.indexNow?.message || 'Queued')}`,
+        });
+        loadAllData();
+      } else {
+        setStatusMessage({ type: 'error', text: data.error || 'Syndication failed.' });
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message || 'Syndication request failed.' });
+    } finally {
+      setSyndicatingPostId(null);
+    }
+  };
+
+  // Batch IndexNow push for all published posts
+  const handleBatchIndexNow = async () => {
+    try {
+      setBatchIndexing(true);
+      const res = await fetch('/api/admin/syndicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'BATCH_INDEXNOW' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatusMessage({ type: 'success', text: data.message || 'Successfully submitted all URLs to IndexNow!' });
+        loadAllData();
+      } else {
+        setStatusMessage({ type: 'error', text: data.error || 'IndexNow push failed.' });
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message });
+    } finally {
+      setBatchIndexing(false);
+    }
+  };
+
+  // Save Social & SEO settings
+  const handleSaveSocialSettings = async () => {
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatusMessage({ type: 'success', text: 'Social media API keys & syndication settings saved successfully!' });
+      } else {
+        setStatusMessage({ type: 'error', text: data.error || 'Failed to save settings.' });
       }
     } catch (err: any) {
       setStatusMessage({ type: 'error', text: err.message });
@@ -1125,6 +1209,403 @@ export default function AdminDashboardPage() {
                     ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* ---------------- SOCIAL MEDIA & INSTANT SEO INDEXING HUB ---------------- */}
+        {activeTab === 'syndication' && (
+          <div className="space-y-8">
+            {/* Header Banner */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 space-y-3 shadow-2xl">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shadow-lg">
+                    <Share2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-white tracking-tight">
+                      Social Syndication & Search Engine Indexing Hub
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Automatically syndicate matchday guides to Twitter/X, Facebook, and Pinterest. Push sub-minute IndexNow pings to Bing & Yahoo to rank before kickoff.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleBatchIndexNow}
+                  disabled={batchIndexing}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs transition shadow-lg shadow-indigo-600/30"
+                >
+                  <Send className={`w-3.5 h-3.5 ${batchIndexing ? 'animate-spin' : ''}`} />
+                  <span>{batchIndexing ? 'Pushing to Search Engines...' : 'Push All URLs to IndexNow'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Automation & Configuration Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Card 1: 10-Post Engine Automation */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> Publishing Velocity
+                  </span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-500/30">
+                    Gemini 3.8 Flash
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">Target Posts Per Day</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={25}
+                    value={settings.postsPerDay}
+                    onChange={(e) => setSettings({ ...settings, postsPerDay: parseInt(e.target.value) || 10 })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white font-bold focus:outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Autonomous cluster covering Football, NFL, NBA, and UFC/Boxing.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800/80 space-y-2 text-xs">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.autoIndexNow}
+                      onChange={(e) => setSettings({ ...settings, autoIndexNow: e.target.checked })}
+                      className="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-0"
+                    />
+                    <span className="text-slate-300 font-semibold">Auto-Push to IndexNow (Bing/Yahoo)</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.autoShareSocial}
+                      onChange={(e) => setSettings({ ...settings, autoShareSocial: e.target.checked })}
+                      className="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-0"
+                    />
+                    <span className="text-slate-300 font-semibold">Auto-Share to Social Media</span>
+                  </label>
+                </div>
+
+                <button
+                  onClick={handleSaveSocialSettings}
+                  className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-bold rounded-xl transition border border-slate-700"
+                >
+                  Save Automation Rules
+                </button>
+              </div>
+
+              {/* Card 2: Instant Search Indexing Stats */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase text-indigo-400 tracking-wider flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5" /> Instant Search Engine Push
+                  </span>
+                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded border border-indigo-500/30">
+                    IndexNow API
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] uppercase text-slate-500 font-bold block">Published Posts</span>
+                    <span className="text-xl font-black text-white">
+                      {posts.filter((p) => p.status === 'PUBLISHED').length}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] uppercase text-slate-500 font-bold block">IndexNow Pushed</span>
+                    <span className="text-xl font-black text-indigo-400">
+                      {posts.filter((p) => p.indexedBing).length}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-400 block mb-1">IndexNow Key</label>
+                  <input
+                    type="text"
+                    value={settings.indexNowKey || ''}
+                    onChange={(e) => setSettings({ ...settings, indexNowKey: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-indigo-300 font-mono focus:outline-none focus:border-indigo-500"
+                  />
+                  <span className="text-[10px] text-slate-500 block mt-1">
+                    Verified automatically via <code className="text-slate-400">/{settings.indexNowKey || 'key'}.txt</code>
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 3: 1-Click Launch Action */}
+              <div className="bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 rounded-2xl p-5 space-y-4 shadow-lg flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+                    <Flame className="w-4 h-4 fill-emerald-400" />
+                    <span>Instant Execution Engine</span>
+                  </div>
+                  <h4 className="text-base font-bold text-white">Trigger 10 Matchday Posts Now</h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Prompts Gemini 3.8 Flash to write 10 high-CTR articles with broadcaster tables and auto-submits them to search engines.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleGenerateAiPosts}
+                  disabled={generatingAi}
+                  className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 text-slate-950 font-black text-xs rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                >
+                  {generatingAi ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Generating Cluster...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 fill-slate-950" />
+                      <span>Generate 10 Posts & Syndicate</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Social Media API Credentials Form */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                  <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-indigo-400" />
+                    Social Media API Integration Credentials
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Paste your API keys below. The autonomous engine will post matchday guides directly to your pages and boards.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleSaveSocialSettings}
+                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition shadow-lg shadow-emerald-500/20"
+                >
+                  Save API Keys
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Twitter / X */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                    <span className="w-7 h-7 rounded-lg bg-sky-500/20 flex items-center justify-center font-black">X</span>
+                    <span>Twitter / X API (v2)</span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">API Key (Consumer Key)</label>
+                      <input
+                        type="text"
+                        value={settings.twitterApiKey || ''}
+                        onChange={(e) => setSettings({ ...settings, twitterApiKey: e.target.value })}
+                        placeholder="e.g. 7q8XyZ..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">API Secret</label>
+                      <input
+                        type="password"
+                        value={settings.twitterApiSecret || ''}
+                        onChange={(e) => setSettings({ ...settings, twitterApiSecret: e.target.value })}
+                        placeholder="••••••••••••"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Access Token</label>
+                      <input
+                        type="text"
+                        value={settings.twitterAccessToken || ''}
+                        onChange={(e) => setSettings({ ...settings, twitterAccessToken: e.target.value })}
+                        placeholder="e.g. 12345-..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Access Secret</label>
+                      <input
+                        type="password"
+                        value={settings.twitterAccessSecret || ''}
+                        onChange={(e) => setSettings({ ...settings, twitterAccessSecret: e.target.value })}
+                        placeholder="••••••••••••"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                      />
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-500 block">Get keys at developer.x.com</span>
+                </div>
+
+                {/* Facebook */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-center gap-2 text-blue-400 font-bold text-sm">
+                    <span className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center font-black">f</span>
+                    <span>Facebook Graph API</span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Facebook Page ID</label>
+                      <input
+                        type="text"
+                        value={settings.facebookPageId || ''}
+                        onChange={(e) => setSettings({ ...settings, facebookPageId: e.target.value })}
+                        placeholder="e.g. 1092837465..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Page Access Token</label>
+                      <input
+                        type="password"
+                        value={settings.facebookAccessToken || ''}
+                        onChange={(e) => setSettings({ ...settings, facebookAccessToken: e.target.value })}
+                        placeholder="Long-lived page token..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-500 block">Get keys at developers.facebook.com</span>
+                </div>
+
+                {/* Pinterest */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
+                    <span className="w-7 h-7 rounded-lg bg-rose-500/20 flex items-center justify-center font-black">P</span>
+                    <span>Pinterest API v5</span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Pinterest Board ID</label>
+                      <input
+                        type="text"
+                        value={settings.pinterestBoardId || ''}
+                        onChange={(e) => setSettings({ ...settings, pinterestBoardId: e.target.value })}
+                        placeholder="e.g. 839201928374..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Access Token</label>
+                      <input
+                        type="password"
+                        value={settings.pinterestAccessToken || ''}
+                        onChange={(e) => setSettings({ ...settings, pinterestAccessToken: e.target.value })}
+                        placeholder="Bearer token..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500"
+                      />
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-500 block">Get keys at developers.pinterest.com</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Post Syndication & Backlinking Status Table */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-base font-bold text-white">Live Matchday Articles Syndication Log</h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Click &quot;Syndicate&quot; on any article to manually push to IndexNow and dispatch social media posts.
+                  </p>
+                </div>
+                <span className="text-xs font-mono text-slate-400">Total: {posts.length} articles</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-300">
+                  <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Article Title</th>
+                      <th className="py-3 px-4">Sport</th>
+                      <th className="py-3 px-4">IndexNow (Bing)</th>
+                      <th className="py-3 px-4">Twitter / X</th>
+                      <th className="py-3 px-4">Facebook</th>
+                      <th className="py-3 px-4">Pinterest</th>
+                      <th className="py-3 px-4 text-right">Syndicate Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {posts.map((post) => (
+                      <tr key={post.id} className="hover:bg-slate-800/40 transition">
+                        <td className="py-3 px-4 font-semibold text-white max-w-xs truncate">
+                          <Link href={`/admin/post/${post.slug}`} className="hover:text-emerald-400 transition">
+                            {post.title}
+                          </Link>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded uppercase font-bold text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
+                            {post.sport}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          {post.indexedBing ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 text-[10px]">
+                              <Check className="w-3 h-3" /> Indexed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-slate-500 font-medium bg-slate-950 px-2 py-0.5 rounded text-[10px]">
+                              <Clock className="w-3 h-3" /> Pending
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {post.sharedTwitter ? (
+                            <span className="inline-flex items-center gap-1 text-sky-400 font-bold bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/30 text-[10px]">
+                              <Check className="w-3 h-3" /> Shared
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 text-[10px]">Not sent</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {post.sharedFacebook ? (
+                            <span className="inline-flex items-center gap-1 text-blue-400 font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/30 text-[10px]">
+                              <Check className="w-3 h-3" /> Shared
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 text-[10px]">Not sent</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {post.sharedPinterest ? (
+                            <span className="inline-flex items-center gap-1 text-rose-400 font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30 text-[10px]">
+                              <Check className="w-3 h-3" /> Pinned
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 text-[10px]">Not sent</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => handleSyndicatePost(post.id)}
+                            disabled={syndicatingPostId === post.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold text-xs transition disabled:opacity-50"
+                          >
+                            <Send className={`w-3 h-3 ${syndicatingPostId === post.id ? 'animate-spin' : ''}`} />
+                            <span>{syndicatingPostId === post.id ? 'Syndicating...' : 'Syndicate ⚡'}</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

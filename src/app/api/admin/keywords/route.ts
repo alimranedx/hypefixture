@@ -35,70 +35,66 @@ export async function POST(request: NextRequest) {
     const { action, keyword, sport, intent, volume, difficulty, targetSlug } = body;
 
     if (action === 'GENERATE_FOR_KEYWORD') {
-      // Generate a specialized SEO article targeted at this specific keyword
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey.trim() === '') {
+        return NextResponse.json({
+          error: 'GEMINI_API_KEY is not configured in .env. AI generation requires a valid Gemini API key. No post was created.',
+        }, { status: 400 });
+      }
+
       const targetKw = keyword || 'where to watch live sports stream';
       const kwSport = sport || 'football';
       const cleanSlug = targetKw.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-      let articleContent = `
-<h2>Complete Matchday Guide: ${targetKw}</h2>
-<p>Sports enthusiasts searching for <strong>${targetKw}</strong> need fast, reliable, and verified broadcasting options. In this guide, we break down official television networks, digital live stream passes, and global kickoff times.</p>
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const prompt = `Write an in-depth 700-word sports SEO broadcast guide for the search query: "${targetKw}". Sport: ${kwSport}. Include H2 headings, broadcaster breakdown by country (US, UK, CA, AU), and a call to action box. Output raw HTML only.`;
+        const resp = await ai.models.generateContent({
+          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+          contents: prompt,
+        });
 
-<h3>Official Broadcasters & Channels</h3>
-<p>Live television broadcasts are available across premium networks. In the United States, tune in via NBC/Peacock or ESPN+. In the United Kingdom, Sky Sports and TNT Sports hold live broadcasting rights.</p>
-
-<div class="cta-box bg-slate-900 border border-emerald-500/30 p-6 rounded-xl my-6">
-  <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Direct Live Streaming Access</h4>
-  <p class="text-slate-300 text-sm mb-4">Stream live in high definition with multi-camera commentary and no regional lag.</p>
-  <a href="/go/affforce" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 rounded-lg transition" rel="sponsored nofollow">Access Stream Here &rarr;</a>
-</div>
-
-<h3>How to Avoid Broadcast Blackouts with a Sports VPN</h3>
-<p>If you are traveling abroad, geographic restrictions may prevent you from loading your domestic sports passes. Connecting to a verified sports VPN instantly restores your secure connection.</p>
-      `;
-
-      // Call Gemini if API key is provided
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (apiKey && apiKey.trim() !== '') {
-        try {
-          const ai = new GoogleGenAI({ apiKey });
-          const prompt = `Write an in-depth 700-word sports SEO broadcast guide for the search query: "${targetKw}". Sport: ${kwSport}. Include H2 headings, broadcaster breakdown by country (US, UK, CA, AU), and a call to action box. Output raw HTML only.`;
-          const resp = await ai.models.generateContent({ model: 'gemini-3.8-flash', contents: prompt });
-          if (resp.text) articleContent = resp.text.replace(/```html/gi, '').replace(/```/g, '');
-        } catch (e) {
-          console.warn('Gemini keyword generation fallback used');
+        const articleContent = (resp.text || '').replace(/```html/gi, '').replace(/```/g, '').trim();
+        if (!articleContent) {
+          return NextResponse.json({
+            error: 'Gemini AI returned empty content. No post was created.',
+          }, { status: 500 });
         }
+
+        const createdPost = await prisma.post.upsert({
+          where: { slug: cleanSlug },
+          update: {
+            title: `How to Watch: ${targetKw.toUpperCase()} (Live Broadcast & Channels)`,
+            content: articleContent,
+            status: 'PUBLISHED',
+          },
+          create: {
+            title: `How to Watch: ${targetKw.toUpperCase()} (Live Broadcast & Channels)`,
+            slug: cleanSlug,
+            summary: `Official viewing guide, TV channels, and verified streaming options for ${targetKw}.`,
+            content: articleContent,
+            sport: kwSport,
+            status: 'PUBLISHED',
+            seoKeywords: targetKw,
+          },
+        });
+
+        // Update keyword targetSlug and rank simulation
+        await prisma.keyword.updateMany({
+          where: { keyword: targetKw },
+          data: { targetSlug: createdPost.slug, currentRank: 3 },
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: `Generated and published targeted article for keyword "${targetKw}" via Gemini!`,
+          post: createdPost,
+        });
+      } catch (err: any) {
+        return NextResponse.json({
+          error: `Gemini AI generation failed: ${err.message || err}. No post was created.`,
+        }, { status: 500 });
       }
-
-      const createdPost = await prisma.post.upsert({
-        where: { slug: cleanSlug },
-        update: {
-          title: `How to Watch: ${targetKw.toUpperCase()} (Live Broadcast & Channels)`,
-          content: articleContent,
-          status: 'PUBLISHED',
-        },
-        create: {
-          title: `How to Watch: ${targetKw.toUpperCase()} (Live Broadcast & Channels)`,
-          slug: cleanSlug,
-          summary: `Official viewing guide, TV channels, and verified streaming options for ${targetKw}.`,
-          content: articleContent,
-          sport: kwSport,
-          status: 'PUBLISHED',
-          seoKeywords: targetKw,
-        },
-      });
-
-      // Update keyword targetSlug and rank simulation
-      await prisma.keyword.updateMany({
-        where: { keyword: targetKw },
-        data: { targetSlug: createdPost.slug, currentRank: 3 },
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: `Generated and published targeted article for keyword "${targetKw}"!`,
-        post: createdPost,
-      });
     }
 
     // Default: Add new keyword

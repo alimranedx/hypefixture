@@ -248,110 +248,149 @@ export async function generateDailyHypePosts(
   });
   const existingSlugs = new Set(existingPosts.map((p) => p.slug));
 
-  // 2. Try Gemini 3.8 Flash live if API key is provided
-  if (apiKey && apiKey.trim() !== '') {
-    const t0 = Date.now();
-    try {
-      const ai = new GoogleGenAI({ apiKey });
+  // 2. Strict AI generation: Gemini must be configured and called
+  if (!apiKey || apiKey.trim() === '') {
+    return {
+      posts: [],
+      telemetry: {
+        source: 'GOOGLE_GEMINI_LIVE',
+        model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+        latencyMs: 0,
+        timestamp: new Date().toISOString(),
+        apiKeyPreview: 'NOT_CONFIGURED',
+        error: 'GEMINI_API_KEY is not configured in .env. AI generation requires a valid Gemini API key. No posts were created.',
+      },
+    };
+  }
 
-      const existingTitlesList = existingPosts.slice(0, 15).map((p) => p.title).join(' | ');
+  const t0 = Date.now();
+  try {
+    const ai = new GoogleGenAI({ apiKey });
 
-      const prompt = `
+    const existingTitlesList = existingPosts.slice(0, 15).map((p) => p.title).join(' | ');
+
+    const prompt = `
 You are a senior sports broadcaster analyst and SEO director for HypeFixture.com.
-Generate exactly ${count} NEW, high-vitality sports SEO articles covering the biggest games across Football (Soccer), NFL, NBA, and UFC.
+Generate exactly ${count} NEW, high-vitality sports SEO articles covering the biggest upcoming marquee games across Football (Soccer), NFL, NBA, and UFC/Boxing.
 
 CRITICAL: Do NOT duplicate any of these existing topics: [${existingTitlesList}]. Every post must cover a fresh, high-hype matchup.
 
-Generate an inter-linked topical cluster:
-- Post 1: Main Pillar "Where to watch [Top Match] live stream: TV Channels, Kickoff Time & Streaming Guide"
-- Post 2: "Predicted Starting Lineups, Team News & Injury Updates for [Top Match]"
-- Post 3: "Head-to-Head Stats, Form Guide & Betting Insights for [Top Match]"
-- Post 4: Complete broadcast preview for a secondary high-hype clash (e.g., NFL Marquee or UFC Championship fight)
-- Post 5: "How to Watch Today's Matches from Anywhere (USA, UK, Canada, Australia) with VPN & Legal Streams"
+Structure the topical articles according to search intent:
+- Football (Soccer): Matchday Pillar "Where to watch [Match] live stream: TV Channels, Kickoff Time & Streaming Guide"
+- Football Lineups: "Predicted Starting Lineups, Team News & Key Injury Reports for [Match]"
+- Football Stats: "Head-to-Head Record, 5-Game Form Guide & Betting Insights for [Match]"
+- VPN / Geo-Guide: "How to Stream Today's Games from Anywhere (USA, UK, Canada, Australia) without Blackouts"
+- Secondary Football Clash: Full broadcast breakdown for a second major European/Domestic clash
+- NFL Marquee Game: "How to Watch [NFL Team A] vs [NFL Team B] Live: TV Networks & Kickoff Time"
+- NFL Team News: Key injury updates, quarterback status, and tactical matchups
+- NBA Primetime Battle: "Where to Stream [NBA Team A] vs [NBA Team B]: National TV & League Pass Guide"
+- UFC / Boxing Main Event: "How to Watch [Fighter A] vs [Fighter B] Live PPV: Start Time, Ringwalks & Fight Card"
+- Master Schedule: "Today's Live Sports Viewing Schedule: Global Kickoff Times & Verified Broadcast Directory"
 
 Return a strictly valid JSON array of objects with keys:
 [
   {
-    "title": "High-CTR search headline",
+    "title": "High-CTR search headline targeted at Google queries like 'where to watch...', 'how to stream...', or 'predicted lineups'",
     "slug": "unique-kebab-case-slug-${Date.now()}",
-    "summary": "150-160 character meta description designed for organic Google search",
-    "content": "Rich HTML content (minimum 600 words) with H2, H3, broadcaster table by country (US, UK, CA, AU), and a call to action streaming box with link to /go/affforce.",
+    "summary": "150-160 character meta description crafted to achieve high organic Google click-through rate",
+    "content": "Rich HTML content (minimum 600 words) with H2, H3, broadcaster table by country (US, UK, CA, AU), key tactical storylines, and a 3-question Frequently Asked Questions (FAQ) section.",
     "sport": "football" | "nba" | "nfl" | "ufc",
     "seoKeywords": "comma separated long-tail SEO keywords",
-    "matchDate": "2026-10-01T19:30:00Z",
-    "schemaJson": "valid JSON string for Schema.org SportsEvent"
+    "matchDate": "2026-10-02T19:30:00Z",
+    "schemaJson": "valid JSON string combining Schema.org SportsEvent and FAQPage"
   }
 ]
 Output ONLY raw JSON with no backticks, markdown, or comments.
 `;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
+    let response: any = null;
+    let lastError: any = null;
+    const maxAttempts = 4;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        response = await ai.models.generateContent({
+          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+          contents: prompt,
+        });
+        if (response?.text) break;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`Gemini attempt ${attempt}/${maxAttempts} failed:`, err.message || err);
+        if (attempt < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 3000 * attempt));
+        }
+      }
+    }
+
+    if (!response || !response.text) {
+      throw lastError || new Error('Gemini API call timed out or returned empty response after retries');
+    }
+
+    const latencyMs = Date.now() - t0;
+    const text = response.text || '';
+    let cleanJson = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const firstBracket = cleanJson.indexOf('[');
+    const lastBracket = cleanJson.lastIndexOf(']');
+    if (firstBracket !== -1 && lastBracket !== -1) {
+      cleanJson = cleanJson.substring(firstBracket, lastBracket + 1);
+    }
+
+    const parsed = JSON.parse(cleanJson);
+
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const posts = parsed.slice(0, count).map((p: any) => {
+        let uniqueSlug = p.slug || p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        if (existingSlugs.has(uniqueSlug)) {
+          uniqueSlug = `${uniqueSlug}-${Date.now().toString().slice(-4)}`;
+        }
+        return {
+          ...p,
+          slug: uniqueSlug,
+          status: autoPublish ? 'PUBLISHED' : 'DRAFT',
+          featuredImage: getRandomImage(p.sport),
+        };
       });
 
-      const latencyMs = Date.now() - t0;
-      const text = response.text || '';
-      const cleanJson = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleanJson);
-
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const posts = parsed.slice(0, count).map((p: any) => {
-          let uniqueSlug = p.slug || p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-          if (existingSlugs.has(uniqueSlug)) {
-            uniqueSlug = `${uniqueSlug}-${Date.now().toString().slice(-4)}`;
-          }
-          return {
-            ...p,
-            slug: uniqueSlug,
-            status: autoPublish ? 'PUBLISHED' : 'DRAFT',
-            featuredImage: getRandomImage(p.sport),
-          };
-        });
-
-        return {
-          posts,
-          telemetry: {
-            source: 'GOOGLE_GEMINI_LIVE',
-            model: 'gemini-3.8-flash',
-            latencyMs,
-            timestamp: new Date().toISOString(),
-            apiKeyPreview,
-            promptPreview: `Generate ${count} articles across Football, NFL, NBA, UFC (excluding ${existingPosts.length} existing posts)`,
-          },
-        };
-      }
-    } catch (err: any) {
-      console.warn('Gemini live call error, falling back to dynamic cluster generator:', err.message || err);
-      const latencyMs = Date.now() - t0;
-      const fallbackPosts = buildFreshProgrammaticHypeCluster(count, autoPublish, existingSlugs);
       return {
-        posts: fallbackPosts,
+        posts,
         telemetry: {
-          source: 'FALLBACK_PROGRAMMATIC',
-          model: 'dynamic-sports-pool',
+          source: 'GOOGLE_GEMINI_LIVE',
+          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
           latencyMs,
           timestamp: new Date().toISOString(),
           apiKeyPreview,
-          error: err.message || 'Gemini API call timed out or returned unexpected format',
+          promptPreview: `Generate ${count} articles across Football, NFL, NBA, UFC (excluding ${existingPosts.length} existing posts)`,
+        },
+      };
+    } else {
+      return {
+        posts: [],
+        telemetry: {
+          source: 'GOOGLE_GEMINI_LIVE',
+          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+          latencyMs,
+          timestamp: new Date().toISOString(),
+          apiKeyPreview,
+          error: 'Gemini returned an empty array or invalid article format. No posts were created.',
         },
       };
     }
+  } catch (err: any) {
+    console.warn('Gemini live call error:', err.message || err);
+    const latencyMs = Date.now() - t0;
+    return {
+      posts: [],
+      telemetry: {
+        source: 'GOOGLE_GEMINI_LIVE',
+        model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+        latencyMs,
+        timestamp: new Date().toISOString(),
+        apiKeyPreview,
+        error: `Gemini AI generation failed: ${err.message || err}. No posts were created.`,
+      },
+    };
   }
-
-  // 3. Fallback: Dynamic programmatic generator that pulls un-used vital matches
-  const fallbackPosts = buildFreshProgrammaticHypeCluster(count, autoPublish, existingSlugs);
-  return {
-    posts: fallbackPosts,
-    telemetry: {
-      source: 'FALLBACK_PROGRAMMATIC',
-      model: 'dynamic-sports-pool',
-      latencyMs: 15,
-      timestamp: new Date().toISOString(),
-      apiKeyPreview,
-      error: 'No GEMINI_API_KEY provided in environment',
-    },
-  };
 }
 
 /**
@@ -555,6 +594,7 @@ function buildFreshProgrammaticHypeCluster(
  * Saves generated post list to MySQL via Prisma
  */
 export async function saveGeneratedPostsToDatabase(posts: GeneratedPostData[]) {
+  if (!posts || posts.length === 0) return [];
   const saved = [];
   for (const post of posts) {
     const cleanTitle = sanitizePlainText(post.title);

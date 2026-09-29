@@ -20,6 +20,11 @@ export const metadata: Metadata = {
     'ufc ppv broadcast channels',
   ],
   metadataBase: new URL('https://hypefixture.com'),
+  icons: {
+    icon: '/favicon-32.png',
+    shortcut: '/favicon-32.png',
+    apple: '/logo-icon.png',
+  },
   openGraph: {
     title: 'HypeFixture - Where to Watch Live Sports Today',
     description:
@@ -28,11 +33,20 @@ export const metadata: Metadata = {
     siteName: 'HypeFixture',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'HypeFixture - Live Sports Schedule & Broadcast Guides',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'HypeFixture - Live Sports Schedule & Broadcast Guides',
     description: 'Find where to watch live football, NFL, NBA & UFC broadcasts legally today.',
+    images: ['/og-image.png'],
   },
 };
 

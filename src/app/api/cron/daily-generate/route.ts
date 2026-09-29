@@ -29,6 +29,17 @@ export async function GET(request: NextRequest) {
   const autoPublish = settings.autoPublish;
 
   const { posts, telemetry } = await generateDailyHypePosts(count, autoPublish);
+
+  if (!posts || posts.length === 0) {
+    return NextResponse.json({
+      success: false,
+      triggeredAt: new Date().toISOString(),
+      error: telemetry.error || 'Gemini AI failed to generate posts. No posts were created.',
+      telemetry,
+      postsGenerated: 0,
+    }, { status: 400 });
+  }
+
   const saved = await saveGeneratedPostsToDatabase(posts);
 
   return NextResponse.json({
