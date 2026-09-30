@@ -7,17 +7,17 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: {
     template: '%s | HypeFixture',
-    default: 'HypeFixture - Where to Watch Live Football, NFL, NBA & UFC Streams',
+    default: 'HypeFixture - Compare Verified Matchday Tickets, Fixtures & Stadium Seats',
   },
   description:
-    'Find where to watch live sports today. Broadcast channels, official streaming platforms, and matchday kickoff times for Premier League, Champions League, NFL, NBA, and UFC.',
+    'Compare real-time verified matchday tickets, schedules, and stadium seating across SeatGeek, StubHub, and Viagogo. Find the cheapest seats with 100% money-back buyer protection.',
   keywords: [
-    'where to watch sports',
-    'live sports stream',
-    'premier league live stream',
-    'nfl sunday night live',
-    'nba league pass guide',
-    'ufc ppv broadcast channels',
+    'matchday tickets',
+    'compare sports tickets',
+    'cheap football tickets',
+    'ipl cricket tickets',
+    'stadium seating guide',
+    'seatgeek vs stubhub tickets',
   ],
   metadataBase: new URL('https://hypefixture.com'),
   icons: {
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
     apple: '/logo-icon.png',
   },
   openGraph: {
-    title: 'HypeFixture - Where to Watch Live Sports Today',
+    title: 'HypeFixture - Compare Verified Matchday Tickets & Stadium Seats',
     description:
-      'Verified broadcast channels, kickoff times, and streaming access for Premier League, NFL, NBA, and UFC.',
+      'Real-time ticket price comparison, official schedules, and stadium seating blueprints for Football, Cricket, and Live Events.',
     url: 'https://hypefixture.com',
     siteName: 'HypeFixture',
     locale: 'en_US',
@@ -38,14 +38,14 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'HypeFixture - Live Sports Schedule & Broadcast Guides',
+        alt: 'HypeFixture - Compare Verified Matchday Tickets & Stadium Seats',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HypeFixture - Live Sports Schedule & Broadcast Guides',
-    description: 'Find where to watch live football, NFL, NBA & UFC broadcasts legally today.',
+    title: 'HypeFixture - Compare Verified Matchday Tickets & Stadium Seats',
+    description: 'Find verified matchday tickets and compare prices from SeatGeek, StubHub, and Viagogo.',
     images: ['/og-image.png'],
   },
 };

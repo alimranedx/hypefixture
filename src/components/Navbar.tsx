@@ -16,6 +16,7 @@ import {
   ChevronDown,
   LogIn,
   UserPlus,
+  Ticket,
 } from 'lucide-react';
 
 import { ActiveSport } from '@/lib/sports';
@@ -45,8 +46,9 @@ export default function Navbar({ initialSports }: NavbarProps) {
     }
   }, [initialSports]);
 
-  // Construct dynamic navigation links: Live Matches first, All Fixtures second, then active sports
+  // Construct dynamic navigation links: Match Tickets first, Live Matches second, All Fixtures, then active sports
   const sportsNav = [
+    { name: '🎟️ Match Tickets', href: '/tickets' },
     { name: 'Live Matches', href: '/live', isLive: true },
     { name: '🔥 All Fixtures', href: '/' },
     ...dynamicSports.map((s) => ({
@@ -88,7 +90,7 @@ export default function Navbar({ initialSports }: NavbarProps) {
                 <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               </span>
               <span className="text-[10px] text-slate-400 font-medium block -mt-1 tracking-wider uppercase">
-                Where To Watch & Live Streams
+                Matchday Tickets &amp; Fixtures
               </span>
             </div>
           </Link>
@@ -125,15 +127,13 @@ export default function Navbar({ initialSports }: NavbarProps) {
 
           {/* Right Actions: Auth, Admin, Quick CTA */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Direct Affiliate Watch CTA */}
+            {/* Find Tickets CTA */}
             <Link
-              href="/go/affforce"
-              target="_blank"
-              rel="sponsored nofollow"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs rounded-lg shadow-md transition"
+              href="/tickets"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs rounded-xl shadow-md shadow-emerald-500/20 transition hover:scale-[1.02]"
             >
-              <Tv className="w-3.5 h-3.5" />
-              Live Streams
+              <Ticket className="w-3.5 h-3.5" />
+              Find Tickets
             </Link>
 
             {/* Authentication state */}

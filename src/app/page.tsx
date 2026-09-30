@@ -6,7 +6,8 @@ import MatchCard from '@/components/MatchCard';
 import StreamCtaCard from '@/components/StreamCtaCard';
 import LiveMatchesSection from '@/components/LiveMatchesSection';
 import JsonLd from '@/components/JsonLd';
-import { Flame, Tv, ArrowRight, ShieldCheck, Zap, Radio } from 'lucide-react';
+import { Flame, Tv, ArrowRight, ShieldCheck, Zap, Radio, Ticket, Calendar, MapPin } from 'lucide-react';
+import { TICKET_EVENTS } from '@/lib/tickets';
 
 import { getActiveSports } from '@/lib/sports';
 
@@ -45,21 +46,28 @@ export default async function HomePage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider shadow-inner">
-            <Flame className="w-4 h-4 text-emerald-400 animate-bounce" />
-            Daily AI-Curated Sports Broadcast Guides
+            <Ticket className="w-4 h-4 text-emerald-400" />
+            Verified Matchday Tickets &amp; Stadium Seating Hub
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-tight max-w-4xl mx-auto">
-            Find Where To Watch <span className="text-emerald-400">Live Sports</span> Today
+            Compare Verified Matchday <span className="text-emerald-400">Tickets &amp; Seats</span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Never miss kickoff. Real-time TV channels, official live streaming options, and predicted lineups across
-            global sports.
+            Never miss kickoff or sold-out derbies. Real-time ticket price comparison across SeatGeek, StubHub &amp; Viagogo with 100% money-back buyer guarantees.
           </p>
 
-          {/* Quick Sport Selector Pills */}
+          {/* Quick Sport & Ticket Selector Pills */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4">
+            <Link
+              href="/tickets"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 text-sm font-black transition flex items-center gap-2 shadow-lg shadow-emerald-500/25 hover:scale-105 active:scale-95"
+            >
+              <Ticket className="w-4 h-4" />
+              🎟️ Compare Match Tickets
+            </Link>
+
             <Link
               href="/live"
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 text-white text-sm font-black transition flex items-center gap-2 shadow-lg shadow-red-900/40 hover:scale-105 active:scale-95"
@@ -90,6 +98,97 @@ export default async function HomePage() {
         title="Live Matches In-Play Now"
         subtitle="Watch Football, Cricket, NFL, and Rugby games currently running with real-time present scores, live situation updates, and stream links."
       />
+
+      {/* Marquee Matchday Tickets Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">
+              <Ticket className="w-4 h-4" />
+              Verified Ticket Marketplace Hub
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Compare Marquee Matchday Tickets
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              Live price comparison across SeatGeek, StubHub, and Viagogo. 100% money-back buyer guarantee.
+            </p>
+          </div>
+          <Link
+            href="/tickets"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition"
+          >
+            <span>View All Matchday Tickets</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {TICKET_EVENTS.slice(0, 3).map((event) => {
+            const currencySymbol = event.currency === 'GBP' ? '£' : event.currency === 'EUR' ? '€' : '$';
+            return (
+              <div
+                key={event.id}
+                className="group rounded-3xl border border-slate-800 bg-slate-900/90 overflow-hidden hover:border-slate-700 hover:shadow-2xl hover:shadow-emerald-950/20 transition-all duration-300 flex flex-col justify-between"
+              >
+                <div className="relative h-40 w-full overflow-hidden bg-slate-950">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                    style={{ backgroundImage: `url(${event.featuredImage})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase">
+                      {event.sport}
+                    </span>
+                  </div>
+                  <div className="absolute bottom-3 left-4 right-4">
+                    <span className="text-[11px] font-bold text-slate-300">
+                      {event.tournament}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <Link href={`/match/${event.slug}`}>
+                      <h3 className="text-lg font-black text-white hover:text-emerald-400 transition leading-snug">
+                        {event.title}
+                      </h3>
+                    </Link>
+                    <div className="space-y-1 text-xs text-slate-300">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>{event.matchDate}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                        <span className="truncate">{event.venueName}, {event.city}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase font-bold">From</div>
+                      <div className="text-xl font-black text-emerald-400">
+                        {currencySymbol}{event.minPrice}
+                      </div>
+                    </div>
+                    <Link
+                      href={`/match/${event.slug}`}
+                      className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-md shadow-emerald-500/20"
+                    >
+                      <span>Compare</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Featured High-Hype Matches Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
