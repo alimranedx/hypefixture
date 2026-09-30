@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import LiveMatchesSection from '@/components/LiveMatchesSection';
-import StreamCtaCard from '@/components/StreamCtaCard';
 import JsonLd from '@/components/JsonLd';
 import { Tv, Radio, ShieldCheck, Zap, Globe, Flame } from 'lucide-react';
 
@@ -82,11 +81,6 @@ export default function LiveMatchesPage() {
         title="Active Match Scorecards"
         subtitle="Filter by sport to inspect in-play action, present runs/wickets or goals, and start watching with a single click."
       />
-
-      {/* Streaming Affiliate Callout */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <StreamCtaCard matchTitle="Watch Every In-Play Match in HD Without Buffering" />
-      </section>
 
       {/* Senior Sports Analyst Live Broadcast FAQ */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

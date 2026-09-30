@@ -56,7 +56,7 @@ export default function OverviewSection() {
             <Tv className="w-4 h-4 text-purple-400" />
           </div>
           <div className="text-3xl font-black text-purple-400">{totalClicks}</div>
-          <span className="text-[11px] text-slate-400 font-medium">Across CPA & VPN channels</span>
+          <span className="text-[11px] text-slate-400 font-medium">Across SeatGeek &amp; StubHub partners</span>
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2 shadow-lg">
@@ -83,7 +83,7 @@ export default function OverviewSection() {
             </span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            HypeFixture content engine monitors upcoming marquee games across Football, NFL, NBA, and UFC. Every cycle prompts Google Gemini with strict deduplication to ensure fresh, zero-duplicate organic rankings.
+            HypeFixture content engine monitors upcoming marquee games across Football, Cricket, and live stadium events. Every cycle prompts Google Gemini with strict deduplication to ensure fresh, zero-duplicate organic rankings.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-3">

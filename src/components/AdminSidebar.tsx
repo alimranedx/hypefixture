@@ -149,10 +149,10 @@ export default function AdminSidebar(props: AdminSidebarProps) {
     },
     {
       id: 'affiliates',
-      name: 'Affiliate & EPC Hub',
+      name: 'Ticket Partners & EPC',
       href: '/admin/affiliates',
       icon: DollarSign,
-      desc: 'AffForce, VPN, FuboTV',
+      desc: 'SeatGeek, StubHub, Viagogo',
     },
     ...(isSuperAdmin
       ? [

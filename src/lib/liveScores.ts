@@ -178,7 +178,7 @@ function parseCricketMatches(scoreData: any): LiveMatchItem[] {
             isBatting: team2Batting,
           },
           broadcasters: DEFAULT_BROADCASTERS.cricket,
-          streamUrl: '/go/affforce',
+          streamUrl: '/tickets',
           isHighHype: true,
         });
       } catch (err) {
@@ -261,7 +261,7 @@ function parseSoccerMatches(scoreData: any): LiveMatchItem[] {
             logo: awayLogo,
           },
           broadcasters: DEFAULT_BROADCASTERS.football,
-          streamUrl: '/go/affforce',
+          streamUrl: '/tickets',
           isHighHype: true,
         });
       } catch (err) {
@@ -325,7 +325,7 @@ function parseNflMatches(scoreData: any): LiveMatchItem[] {
           logo: awayLogo,
         },
         broadcasters: DEFAULT_BROADCASTERS.nfl,
-        streamUrl: '/go/affforce',
+        streamUrl: '/tickets',
         isHighHype: true,
       });
     } catch (err) {
@@ -388,7 +388,7 @@ function parseRugbyMatches(scoreData: any): LiveMatchItem[] {
             logo: awayLogo,
           },
           broadcasters: DEFAULT_BROADCASTERS.rugby,
-          streamUrl: '/go/affforce',
+          streamUrl: '/tickets',
           isHighHype: true,
         });
       } catch (err) {
@@ -452,7 +452,7 @@ function parseNbaMatches(scoreData: any): LiveMatchItem[] {
           logo: awayLogo,
         },
         broadcasters: DEFAULT_BROADCASTERS.nba,
-        streamUrl: '/go/affforce',
+        streamUrl: '/tickets',
         isHighHype: true,
       });
     } catch (err) {
@@ -493,7 +493,7 @@ const SEED_BACKUP_MATCHES: LiveMatchItem[] = [
       logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/382.png',
     },
     broadcasters: DEFAULT_BROADCASTERS.football,
-    streamUrl: '/go/affforce',
+    streamUrl: '/tickets',
     isHighHype: true,
   },
   {
@@ -525,7 +525,7 @@ const SEED_BACKUP_MATCHES: LiveMatchItem[] = [
       isBatting: false,
     },
     broadcasters: DEFAULT_BROADCASTERS.cricket,
-    streamUrl: '/go/affforce',
+    streamUrl: '/tickets',
     isHighHype: true,
   },
   {
@@ -556,7 +556,7 @@ const SEED_BACKUP_MATCHES: LiveMatchItem[] = [
       logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/scoreboard/kc.png',
     },
     broadcasters: DEFAULT_BROADCASTERS.nfl,
-    streamUrl: '/go/affforce',
+    streamUrl: '/tickets',
     isHighHype: true,
   },
   {
@@ -587,7 +587,7 @@ const SEED_BACKUP_MATCHES: LiveMatchItem[] = [
       logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/rugby/500/9.png',
     },
     broadcasters: DEFAULT_BROADCASTERS.rugby,
-    streamUrl: '/go/affforce',
+    streamUrl: '/tickets',
     isHighHype: true,
   },
 ];

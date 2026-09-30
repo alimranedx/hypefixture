@@ -4,10 +4,9 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { HYPE_MATCH_POOL } from '@/lib/gemini';
 import MatchCard from '@/components/MatchCard';
-import StreamCtaCard from '@/components/StreamCtaCard';
 import LiveMatchesSection from '@/components/LiveMatchesSection';
 import Link from 'next/link';
-import { ArrowRight, Trophy } from 'lucide-react';
+import { ArrowRight, Trophy, Ticket } from 'lucide-react';
 import { SportCategory } from '@/lib/liveScores';
 
 import { getSportBySlug, getActiveSports } from '@/lib/sports';
@@ -42,6 +41,7 @@ export default async function SportPage({ params }: SportPageProps) {
   }
 
   const config = {
+    name: sportData.name,
     title: `${sportData.name} Broadcasts & Live Streams`,
     desc: sportData.description || `Watch live ${sportData.name} matches today with verified TV channels, official streams, and schedule guides.`,
     icon: sportData.icon || '🏆',
@@ -113,8 +113,25 @@ export default async function SportPage({ params }: SportPageProps) {
         </div>
       </section>
 
-      {/* Streaming Affiliate Callout */}
-      <StreamCtaCard matchTitle={`Every ${sportKey.toUpperCase()} Live Event`} sport={sportKey} />
+      {/* Verified Matchday Tickets Banner for this sport */}
+      <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl">
+        <div className="space-y-2 text-center sm:text-left">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <Ticket className="w-3.5 h-3.5 text-emerald-400" />
+            Verified {config.name} Match Tickets
+          </div>
+          <h3 className="text-xl sm:text-2xl font-black text-white">Compare {config.name} Matchday Tickets &amp; Seats</h3>
+          <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
+            Compare prices across SeatGeek, StubHub, and Viagogo. Filter by seating tier (Cat 1 Sideline, Behind Goal, VIP Hospitality) with 100% money-back buyer guarantee.
+          </p>
+        </div>
+        <Link
+          href="/tickets"
+          className="shrink-0 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 hover:scale-105"
+        >
+          Compare Tickets &rarr;
+        </Link>
+      </div>
 
       {/* Latest Articles */}
       <section className="space-y-6">

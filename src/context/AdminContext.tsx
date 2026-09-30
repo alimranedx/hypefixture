@@ -82,8 +82,8 @@ export interface AdminContextType {
 const defaultSettings: SystemSettings = {
   postsPerDay: 10,
   autoPublish: true,
-  activeSports: 'football,nba,nfl,ufc',
-  affforceUrl: 'https://panel.affforce.com/apply/register-affiliate/',
+  activeSports: 'football,cricket',
+  affforceUrl: 'https://seatgeek.com/?ref=hypefixture',
   vpnUrl: 'https://nordvpn.com',
   fuboUrl: 'https://www.fubo.tv',
   autoShareSocial: false,

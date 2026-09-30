@@ -64,14 +64,14 @@ export default function RichPostEditor({
   };
 
   const handleInsertLink = () => {
-    const url = prompt('Enter URL (e.g. https://... or /go/affforce):', 'https://');
+    const url = prompt('Enter URL (e.g. https://... or /tickets):', 'https://');
     if (!url) return;
     // Prevent javascript: injection in prompt
     if (url.toLowerCase().startsWith('javascript:')) {
       alert('Security Warning: "javascript:" pseudo-protocol is blocked by the XSS shield.');
       return;
     }
-    insertFormatting(`<a href="${url}" target="_blank" rel="noopener noreferrer">`, '</a>', 'Click here to stream');
+    insertFormatting(`<a href="${url}" target="_blank" rel="noopener noreferrer">`, '</a>', 'Click here to compare');
   };
 
   const handleInsertImage = () => {
@@ -112,11 +112,11 @@ export default function RichPostEditor({
     const ctaTemplate = `
 <div class="cta-box bg-slate-900 border border-emerald-500/30 p-6 rounded-2xl my-6 flex flex-col sm:flex-row items-center justify-between gap-4">
   <div>
-    <h4 class="text-emerald-400 font-bold text-base mb-1">⚡ Instant Matchday Pass</h4>
-    <p class="text-xs text-slate-400">Stream in 1080p 60FPS on Smart TV, PC, tablet, or mobile.</p>
+    <h4 class="text-emerald-400 font-bold text-base mb-1">⚡ Verified Matchday Tickets</h4>
+    <p class="text-xs text-slate-400">Compare 100% guaranteed tickets from SeatGeek, StubHub, and Viagogo.</p>
   </div>
-  <a href="/go/affforce" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition" target="_blank" rel="sponsored nofollow">
-    Watch Live Now &rarr;
+  <a href="/tickets" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition">
+    Compare Tickets &rarr;
   </a>
 </div>
 `;

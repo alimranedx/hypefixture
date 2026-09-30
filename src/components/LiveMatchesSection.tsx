@@ -688,24 +688,22 @@ export default function LiveMatchesSection({
                     </div>
                   </div>
 
-                  {/* Stream / Match Center Action Links */}
+                  {/* Match Guide & Tickets Action Links */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <Link
-                      href={match.streamUrl}
-                      target="_blank"
-                      rel="sponsored nofollow"
-                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs shadow-lg shadow-red-950/60 hover:shadow-red-500/25 active:scale-95 transition-all"
+                      href={`/match/${match.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-white font-bold text-xs transition active:scale-95"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Watch Stream</span>
+                      <Tv className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Broadcast Info</span>
                     </Link>
 
                     <Link
-                      href={`/match/${match.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                      className="flex items-center justify-center gap-1 py-2.5 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/60 text-slate-200 hover:text-white font-bold text-xs transition active:scale-95"
+                      href={`/match/${match.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}#ticket-comparison`}
+                      className="flex items-center justify-center gap-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
                     >
-                      <span>Match Guide</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      <span>🎟️ Match Tickets</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 </div>

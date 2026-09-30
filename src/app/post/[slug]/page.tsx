@@ -2,10 +2,9 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
-import StreamCtaCard from '@/components/StreamCtaCard';
 import JsonLd from '@/components/JsonLd';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Tag, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, ArrowRight, Ticket } from 'lucide-react';
 import { sanitizeArticleHtml } from '@/lib/sanitize';
 
 interface PostPageProps {
@@ -99,8 +98,23 @@ export default async function PostPage({ params }: PostPageProps) {
         </p>
       </div>
 
-      {/* Embedded Stream CTA */}
-      <StreamCtaCard matchTitle={post.title} sport={post.sport} />
+      {/* Verified Matchday Tickets Banner */}
+      <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+        <div className="space-y-1 text-center sm:text-left">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 uppercase tracking-wider">
+            <Ticket className="w-3.5 h-3.5" />
+            Verified Matchday Tickets
+          </div>
+          <h4 className="text-lg font-black text-white">Compare Verified Ticket Prices &amp; Seats</h4>
+          <p className="text-xs text-slate-300">Compare real-time listings across SeatGeek, StubHub, and Viagogo with 100% money-back buyer guarantee.</p>
+        </div>
+        <Link
+          href="/tickets"
+          className="shrink-0 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-md shadow-emerald-500/20"
+        >
+          Compare Tickets &rarr;
+        </Link>
+      </div>
 
       {/* Article Content Rendered */}
       <div

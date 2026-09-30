@@ -13,13 +13,12 @@ export async function GET(
     where: {
       OR: [
         { slug: partnerSlug },
-        { slug: partnerSlug === 'sports-stream' || partnerSlug === 'live-stream' ? 'affforce' : partnerSlug },
-        { slug: partnerSlug === 'nordvpn' ? 'vpn' : partnerSlug },
+        { slug: partnerSlug === 'tickets' ? 'seatgeek' : partnerSlug },
       ],
     },
   });
 
-  let destination = 'https://panel.affforce.com/apply/register-affiliate/';
+  let destination = 'https://seatgeek.com/?ref=hypefixture';
 
   if (dbPartner) {
     destination = dbPartner.targetUrl;
@@ -29,14 +28,14 @@ export async function GET(
       data: { clicks: { increment: 1 } },
     }).catch(() => null);
   } else {
-    // Fallback to SystemSettings table
-    const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
-    if (partnerSlug.includes('vpn')) {
-      destination = settings?.vpnUrl || 'https://nordvpn.com';
-    } else if (partnerSlug.includes('fubo')) {
-      destination = settings?.fuboUrl || 'https://www.fubo.tv';
+    if (partnerSlug.includes('stubhub')) {
+      destination = 'https://stubhub.com/?ref=hypefixture';
+    } else if (partnerSlug.includes('viagogo')) {
+      destination = 'https://viagogo.com/?ref=hypefixture';
+    } else if (partnerSlug.includes('tickpick')) {
+      destination = 'https://tickpick.com/?ref=hypefixture';
     } else {
-      destination = settings?.affforceUrl || 'https://panel.affforce.com/apply/register-affiliate/';
+      destination = 'https://seatgeek.com/?ref=hypefixture';
     }
   }
 

@@ -585,9 +585,9 @@ function buildFreshProgrammaticHypeCluster(
 </ul>
 
 <div class="cta-box bg-slate-900 border border-emerald-500/30 p-6 rounded-xl my-6">
-  <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Verified Live Matchday Broadcast</h4>
-  <p class="text-slate-300 text-sm mb-4">Stream ${primaryMatch.teams} in 1080p 60FPS with multi-language commentary and instant cloud setup.</p>
-  <a href="/go/affforce" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-emerald-500/20" rel="sponsored nofollow">Access Live Broadcast Now &rarr;</a>
+  <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Verified Matchday Tickets &amp; Stadium Seating</h4>
+  <p class="text-slate-300 text-sm mb-4">Compare 100% guaranteed ticket prices from SeatGeek, StubHub, and Viagogo.</p>
+  <a href="/tickets" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-emerald-500/20" rel="sponsored nofollow">Compare Verified Tickets &rarr;</a>
 </div>
 
 <h3>Kickoff Time & Schedule</h3>
@@ -624,7 +624,7 @@ function buildFreshProgrammaticHypeCluster(
 <div class="cta-box bg-slate-900 border border-emerald-500/30 p-6 rounded-xl my-6">
   <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Watch the Action Live</h4>
   <p class="text-slate-300 text-sm mb-4">Don't miss the starting whistle. Stream live on Smart TV, mobile, or desktop.</p>
-  <a href="/go/affforce" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition" rel="sponsored nofollow">Stream Live Broadcast &rarr;</a>
+  <a href="/tickets" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition" rel="sponsored nofollow">Compare Matchday Tickets &rarr;</a>
 </div>
       `,
       sport: primaryMatch.sport,
@@ -651,8 +651,8 @@ function buildFreshProgrammaticHypeCluster(
 <p>Both teams arrive with strong offensive output over their previous 5 matches, promising a high-tempo contest.</p>
 
 <div class="cta-box bg-slate-900 border border-emerald-500/30 p-6 rounded-xl my-6">
-  <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Stream Live with Multi-Angle Coverage</h4>
-  <a href="/go/affforce" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition" rel="sponsored nofollow">Watch Live Match &rarr;</a>
+  <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Compare Matchday Tickets</h4>
+  <a href="/tickets" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition" rel="sponsored nofollow">Find Tickets &rarr;</a>
 </div>
       `,
       sport: primaryMatch.sport,
@@ -684,8 +684,8 @@ function buildFreshProgrammaticHypeCluster(
 </ul>
 
 <div class="cta-box bg-slate-900 border border-emerald-500/30 p-6 rounded-xl my-6">
-  <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Live Matchday Pass</h4>
-  <a href="/go/affforce" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition" rel="sponsored nofollow">Watch Live Here &rarr;</a>
+  <h4 class="text-emerald-400 font-bold text-lg mb-2">⚡ Compare Verified Tickets &amp; Seats</h4>
+  <a href="/tickets" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition" rel="sponsored nofollow">Compare Tickets &rarr;</a>
 </div>
       `,
       sport: secondaryMatch.sport,

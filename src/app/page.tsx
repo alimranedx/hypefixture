@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { HYPE_MATCH_POOL } from '@/lib/gemini';
 import MatchCard from '@/components/MatchCard';
-import StreamCtaCard from '@/components/StreamCtaCard';
 import LiveMatchesSection from '@/components/LiveMatchesSection';
 import JsonLd from '@/components/JsonLd';
 import { Flame, Tv, ArrowRight, ShieldCheck, Zap, Radio, Ticket, Calendar, MapPin } from 'lucide-react';
@@ -226,11 +225,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Streaming Banner Callout */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <StreamCtaCard matchTitle="Premier League, NFL, NBA & UFC Live Streams" />
-      </section>
-
       {/* Latest AI-Generated Articles & SEO Content */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-8">
@@ -280,12 +274,10 @@ export default async function HomePage() {
                     Read Guide <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <Link
-                    href="/go/affforce"
-                    target="_blank"
-                    rel="sponsored nofollow"
+                    href="/tickets"
                     className="text-[11px] font-semibold text-slate-400 hover:text-white transition"
                   >
-                    Watch Stream &rarr;
+                    Match Tickets &rarr;
                   </Link>
                 </div>
               </div>

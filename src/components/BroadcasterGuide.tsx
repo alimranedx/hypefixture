@@ -48,14 +48,12 @@ export default function BroadcasterGuide({ broadcasters }: BroadcasterGuideProps
                 <td className="py-3 px-4">{reg.channels}</td>
                 <td className="py-3 px-4 text-emerald-400">{reg.cta}</td>
                 <td className="py-3 px-4 text-right">
-                  <Link
-                    href="/go/affforce"
-                    target="_blank"
-                    rel="sponsored nofollow"
+                  <a
+                    href="#ticket-comparison"
                     className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition"
                   >
-                    Watch Here <ExternalLink className="w-3 h-3" />
-                  </Link>
+                    Match Guide <ExternalLink className="w-3 h-3" />
+                  </a>
                 </td>
               </tr>
             ))}
