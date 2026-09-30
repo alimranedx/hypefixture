@@ -24,22 +24,15 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { LiveMatchItem, LiveScoreResponse, SportCategory } from '@/lib/liveScores';
+import { ActiveSport } from '@/lib/sports';
 
 interface LiveMatchesSectionProps {
   initialSport?: SportCategory | 'all';
+  dynamicSports?: ActiveSport[];
   title?: string;
   subtitle?: string;
   compact?: boolean;
 }
-
-const SPORTS_TABS: Array<{ id: SportCategory | 'all'; label: string; emoji: string }> = [
-  { id: 'all', label: 'All Sports', emoji: '🔥' },
-  { id: 'cricket', label: 'Cricket', emoji: '🏏' },
-  { id: 'football', label: 'Football / Soccer', emoji: '⚽' },
-  { id: 'nfl', label: 'NFL', emoji: '🏈' },
-  { id: 'rugby', label: 'Rugby', emoji: '🏉' },
-  { id: 'nba', label: 'NBA', emoji: '🏀' },
-];
 
 // Clean Web Audio synthesizer for score notification chimes
 function playScoreChime() {
@@ -69,11 +62,13 @@ function playScoreChime() {
 
 export default function LiveMatchesSection({
   initialSport = 'all',
+  dynamicSports,
   title = 'Live Match Center',
   subtitle = 'Real-time scores, in-play action, and official broadcast channels across Football, Cricket, NFL & Rugby',
   compact = false,
 }: LiveMatchesSectionProps) {
   const [selectedSport, setSelectedSport] = useState<SportCategory | 'all'>(initialSport);
+  const [availableSports, setAvailableSports] = useState<ActiveSport[]>(dynamicSports || []);
   const [onlyLive, setOnlyLive] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [data, setData] = useState<LiveScoreResponse | null>(null);
@@ -83,6 +78,35 @@ export default function LiveMatchesSection({
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'polling'>('connecting');
   const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState<Set<string>>(new Set());
   const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
+
+  // Fetch active sports if not provided
+  useEffect(() => {
+    if (!dynamicSports || dynamicSports.length === 0) {
+      fetch('/api/sports')
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && Array.isArray(json.sports)) {
+            setAvailableSports(json.sports);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [dynamicSports]);
+
+  // Derive dynamic tabs from active sports in database
+  const sportsTabs = useMemo(() => {
+    const list: Array<{ id: SportCategory | 'all'; label: string; emoji: string }> = [
+      { id: 'all', label: 'All Sports', emoji: '🔥' },
+    ];
+    availableSports.forEach((s) => {
+      list.push({
+        id: s.slug as SportCategory,
+        label: s.name.split(' ')[0],
+        emoji: s.icon || '🏆',
+      });
+    });
+    return list;
+  }, [availableSports]);
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const fallbackPollRef = useRef<NodeJS.Timeout | null>(null);
@@ -371,7 +395,7 @@ export default function LiveMatchesSection({
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
         {/* Sport Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-thin scrollbar-thumb-slate-800">
-          {SPORTS_TABS.map((tab) => {
+          {sportsTabs.map((tab) => {
             const isActive = selectedSport === tab.id;
             const liveCount =
               tab.id === 'all'

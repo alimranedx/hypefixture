@@ -8,15 +8,20 @@ import LiveMatchesSection from '@/components/LiveMatchesSection';
 import JsonLd from '@/components/JsonLd';
 import { Flame, Tv, ArrowRight, ShieldCheck, Zap, Radio } from 'lucide-react';
 
+import { getActiveSports } from '@/lib/sports';
+
 export const revalidate = 60; // Revalidate every minute
 
 export default async function HomePage() {
-  // Fetch latest published posts from MySQL
-  const latestPosts = await prisma.post.findMany({
-    where: { status: 'PUBLISHED' },
-    orderBy: { createdAt: 'desc' },
-    take: 6,
-  });
+  // Fetch dynamic active sports and latest published posts concurrently
+  const [activeSports, latestPosts] = await Promise.all([
+    getActiveSports(),
+    prisma.post.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: { createdAt: 'desc' },
+      take: 6,
+    }),
+  ]);
 
   const websiteSchema = {
     '@context': 'https://schema.org',
@@ -49,55 +54,31 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Never miss kickoff. Real-time TV channels, official live streaming options, and predicted lineups for
-            Football (Soccer), NFL, NBA, and UFC.
+            Never miss kickoff. Real-time TV channels, official live streaming options, and predicted lineups across
+            global sports.
           </p>
 
           {/* Quick Sport Selector Pills */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4">
             <Link
               href="/live"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 text-white text-sm font-black transition flex items-center gap-2 shadow-lg shadow-red-900/40 hover:scale-105"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 text-white text-sm font-black transition flex items-center gap-2 shadow-lg shadow-red-900/40 hover:scale-105 active:scale-95"
             >
               <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
               🔴 Live Matches Now
             </Link>
-            <Link
-              href="/football"
-              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
-            >
-              ⚽ Premier League & UCL
-            </Link>
-            <Link
-              href="/cricket"
-              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
-            >
-              🏏 Cricket Live
-            </Link>
-            <Link
-              href="/nfl"
-              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-blue-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
-            >
-              🏈 NFL Game Day
-            </Link>
-            <Link
-              href="/rugby"
-              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
-            >
-              🏉 Rugby Live
-            </Link>
-            <Link
-              href="/nba"
-              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-orange-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
-            >
-              🏀 NBA Live
-            </Link>
-            <Link
-              href="/ufc"
-              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-red-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
-            >
-              🥊 UFC Fight Night
-            </Link>
+
+            {/* Dynamically Rendered Active Sports from Database */}
+            {activeSports.map((sport) => (
+              <Link
+                key={sport.id}
+                href={`/${sport.slug}`}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500/50 text-slate-200 hover:text-white text-sm font-bold transition flex items-center gap-2 shadow-lg hover:-translate-y-0.5 active:scale-95"
+              >
+                <span>{sport.icon || '🏆'}</span>
+                <span>{sport.name}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -105,6 +86,7 @@ export default async function HomePage() {
       {/* Live Match Center Section */}
       <LiveMatchesSection
         initialSport="all"
+        dynamicSports={activeSports}
         title="Live Matches In-Play Now"
         subtitle="Watch Football, Cricket, NFL, and Rugby games currently running with real-time present scores, live situation updates, and stream links."
       />

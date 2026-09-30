@@ -10,58 +10,42 @@ import Link from 'next/link';
 import { ArrowRight, Trophy } from 'lucide-react';
 import { SportCategory } from '@/lib/liveScores';
 
+import { getSportBySlug, getActiveSports } from '@/lib/sports';
+
 interface SportPageProps {
   params: Promise<{ sport: string }>;
 }
 
-const VALID_SPORTS: Record<string, { title: string; desc: string; icon: string }> = {
-  football: {
-    title: 'Football / Soccer Broadcasts & Live Streams',
-    desc: 'Watch Premier League, UEFA Champions League, and La Liga matches. Official TV channels, kickoff times, and streaming access.',
-    icon: '⚽',
-  },
-  cricket: {
-    title: 'Cricket Live Scores, Broadcasts & Match Streams',
-    desc: 'Live scores, over-by-over updates, and official TV channels for international cricket tours, ICC tournaments, and domestic T20 leagues.',
-    icon: '🏏',
-  },
-  nfl: {
-    title: 'NFL Live Streams & Sunday Broadcast Schedule',
-    desc: 'Live TV channels and streams for Thursday Night, Sunday Night, and Monday Night Football.',
-    icon: '🏈',
-  },
-  rugby: {
-    title: 'Rugby Union & League Live Streams and Fixtures',
-    desc: 'Where to watch Six Nations, The Rugby Championship, Premiership, and Super Rugby live.',
-    icon: '🏉',
-  },
-  nba: {
-    title: 'NBA Live Games & Broadcast Channels',
-    desc: 'Never miss an NBA matchup. Find where to stream NBA games today on ESPN, TNT, and NBA League Pass.',
-    icon: '🏀',
-  },
-  ufc: {
-    title: 'UFC PPV & Fight Night Live Streaming Guides',
-    desc: 'Official UFC Main Card times, ESPN+ PPV streaming details, and preliminary fight schedules.',
-    icon: '🥊',
-  },
-};
+export async function generateStaticParams() {
+  const sports = await getActiveSports();
+  return sports.map((s) => ({ sport: s.slug }));
+}
 
 export async function generateMetadata({ params }: SportPageProps): Promise<Metadata> {
   const { sport } = await params;
-  const config = VALID_SPORTS[sport.toLowerCase()];
-  if (!config) return { title: 'Sport Not Found' };
+  const sportData = await getSportBySlug(sport);
+  if (!sportData) return { title: 'Sport Not Found | HypeFixture' };
 
   return {
-    title: `${config.title} - Where to Watch Live`,
-    description: config.desc,
+    title: `${sportData.icon || '🏆'} ${sportData.name} Broadcasts & Live Streams | Where to Watch`,
+    description: sportData.description || `Watch live ${sportData.name} matches today. Verified TV channels, kickoff times, and legal streaming access.`,
   };
 }
 
 export default async function SportPage({ params }: SportPageProps) {
   const { sport } = await params;
   const sportKey = sport.toLowerCase();
-  const config = VALID_SPORTS[sportKey];
+  const sportData = await getSportBySlug(sportKey);
+
+  if (!sportData) {
+    notFound();
+  }
+
+  const config = {
+    title: `${sportData.name} Broadcasts & Live Streams`,
+    desc: sportData.description || `Watch live ${sportData.name} matches today with verified TV channels, official streams, and schedule guides.`,
+    icon: sportData.icon || '🏆',
+  };
 
   if (!config) {
     notFound();

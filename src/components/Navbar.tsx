@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -18,21 +18,42 @@ import {
   UserPlus,
 } from 'lucide-react';
 
-export default function Navbar() {
+import { ActiveSport } from '@/lib/sports';
+
+interface NavbarProps {
+  initialSports?: ActiveSport[];
+}
+
+export default function Navbar({ initialSports }: NavbarProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [dynamicSports, setDynamicSports] = useState<ActiveSport[]>(initialSports || []);
 
+  // Fetch active sports from API if not passed from server layout
+  useEffect(() => {
+    if (!initialSports || initialSports.length === 0) {
+      fetch('/api/sports')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.sports)) {
+            setDynamicSports(data.sports);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [initialSports]);
+
+  // Construct dynamic navigation links: Live Matches first, All Fixtures second, then active sports
   const sportsNav = [
     { name: 'Live Matches', href: '/live', isLive: true },
     { name: '🔥 All Fixtures', href: '/' },
-    { name: '⚽ Football', href: '/football' },
-    { name: '🏏 Cricket', href: '/cricket' },
-    { name: '🏈 NFL', href: '/nfl' },
-    { name: '🏉 Rugby', href: '/rugby' },
-    { name: '🏀 NBA', href: '/nba' },
-    { name: '🥊 UFC', href: '/ufc' },
+    ...dynamicSports.map((s) => ({
+      name: `${s.icon || '🏆'} ${s.name.split(' ')[0]}`,
+      href: `/${s.slug}`,
+      isLive: false,
+    })),
   ];
 
   const userRole = (session?.user as any)?.role;

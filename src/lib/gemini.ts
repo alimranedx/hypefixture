@@ -42,6 +42,15 @@ const SPORTS_IMAGES = {
     'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1200&q=80', // MMA fighting arena
     'https://images.unsplash.com/photo-1509563400140-1278d6634f81?auto=format&fit=crop&w=1200&q=80', // Fight championship spotlight
   ],
+  cricket: [
+    'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=1200&q=80', // Cricket stadium / batsman
+    'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=1200&q=80', // Cricket ball on pitch
+    'https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?auto=format&fit=crop&w=1200&q=80', // Cricket match floodlights
+  ],
+  rugby: [
+    'https://images.unsplash.com/photo-1544698310-74ea9d1c8258?auto=format&fit=crop&w=1200&q=80', // Rugby pitch
+    'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1200&q=80', // Rugby action
+  ],
 };
 
 function getRandomImage(sport: string): string {
@@ -211,6 +220,42 @@ export const EXTENDED_HYPE_MATCHES = [
     time: '2026-10-06 22:00 UTC',
     broadcasters: { us: 'DAZN PPV / ESPN+ PPV', uk: 'TNT Sports Box Office / Sky Box Office', ca: 'DAZN PPV', au: 'Main Event' },
   },
+
+  // Cricket
+  {
+    sport: 'cricket',
+    teams: 'India vs Australia',
+    tournament: 'ICC Champions Trophy 2026',
+    venue: 'Eden Gardens, Kolkata',
+    time: '2026-10-04 14:00 UTC',
+    broadcasters: { us: 'Willow TV / ESPN+', uk: 'Sky Sports Cricket', ca: 'Willow Canada', au: 'Fox Cricket / Kayo', in: 'Star Sports / Hotstar' },
+  },
+  {
+    sport: 'cricket',
+    teams: 'England vs India',
+    tournament: 'International Test Series',
+    venue: "Lord's Cricket Ground, London",
+    time: '2026-10-08 10:00 UTC',
+    broadcasters: { us: 'Willow TV', uk: 'Sky Sports Main Event', ca: 'Willow Canada', au: 'Fox Cricket', in: 'JioCinema' },
+  },
+  {
+    sport: 'cricket',
+    teams: 'Chennai Super Kings vs Mumbai Indians',
+    tournament: 'Indian Premier League (IPL)',
+    venue: 'Wankhede Stadium, Mumbai',
+    time: '2026-10-12 14:00 UTC',
+    broadcasters: { us: 'Willow TV', uk: 'Sky Sports Cricket', ca: 'Willow Canada', au: 'Kayo Sports', in: 'Star Sports / JioCinema' },
+  },
+
+  // Rugby
+  {
+    sport: 'rugby',
+    teams: 'New Zealand vs South Africa',
+    tournament: 'The Rugby Championship',
+    venue: 'Eden Park, Auckland',
+    time: '2026-10-03 07:05 UTC',
+    broadcasters: { us: 'FloRugby', uk: 'TNT Sports', ca: 'TSN', au: 'Stan Sport' },
+  },
 ];
 
 export const HYPE_MATCH_POOL = EXTENDED_HYPE_MATCHES.slice(0, 6);
@@ -220,20 +265,22 @@ export const HYPE_MATCH_POOL = EXTENDED_HYPE_MATCHES.slice(0, 6);
  */
 /**
  * Ordered priority of Gemini models:
- * System first attempts the latest preview/flagship model (3.8). If Google's servers
- * throw 503 (High Demand), 429 (Rate Limit), or temporary unavailable errors, the engine
- * automatically falls back to 3.7, then 3.6, then 3.5, then 3.5-lite.
+ * System first attempts latest official production models (2.5-flash, 2.0-flash, 1.5-flash, 1.5-pro, 2.5-pro).
+ * If Google's servers throw 503, 429, or temporary unavailable errors, the engine automatically cascades
+ * to the next viable model seamlessly.
  */
 export function getGeminiModelCascade(): string[] {
   const envModel = process.env.GEMINI_MODEL?.trim();
   const models = [
     envModel,
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro',
+    'gemini-2.5-pro',
     'gemini-3.8-flash',
     'gemini-3.7-flash',
-    'gemini-3.6-flash',
     'gemini-3.5-flash',
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite',
   ].filter((m): m is string => Boolean(m && m.length > 0));
 
   // Deduplicate preserving priority order
@@ -349,25 +396,32 @@ export async function generateDailyHypePosts(
   try {
     const ai = new GoogleGenAI({ apiKey });
 
+    // Fetch active sports from database to tailor AI generation to admin-selected coverage
+    const activeSports = await prisma.sportCategory.findMany({
+      where: { isActive: true },
+      orderBy: { order: 'asc' },
+    });
+    const activeSportsList = activeSports.length > 0 ? activeSports : [
+      { name: 'Football (Soccer)', slug: 'football' },
+      { name: 'Cricket', slug: 'cricket' }
+    ];
+    const activeSportsNames = activeSportsList.map((s) => s.name).join(', ');
+    const activeSlugsExample = activeSportsList.map((s) => `"${s.slug}"`).join(' | ');
+
     const existingTitlesList = existingPosts.slice(0, 15).map((p) => p.title).join(' | ');
 
     const prompt = `
 You are a senior sports broadcaster analyst and SEO director for HypeFixture.com.
-Generate exactly ${count} NEW, high-vitality sports SEO articles covering the biggest upcoming marquee games across Football (Soccer), NFL, NBA, and UFC/Boxing.
+Generate exactly ${count} NEW, high-vitality sports SEO broadcast guides covering the biggest upcoming marquee games across our active coverage: ${activeSportsNames}.
 
 CRITICAL: Do NOT duplicate any of these existing topics: [${existingTitlesList}]. Every post must cover a fresh, high-hype matchup.
 
-Structure the topical articles according to search intent:
-- Football (Soccer): Matchday Pillar "Where to watch [Match] live stream: TV Channels, Kickoff Time & Streaming Guide"
-- Football Lineups: "Predicted Starting Lineups, Team News & Key Injury Reports for [Match]"
-- Football Stats: "Head-to-Head Record, 5-Game Form Guide & Betting Insights for [Match]"
-- VPN / Geo-Guide: "How to Stream Today's Games from Anywhere (USA, UK, Canada, Australia) without Blackouts"
-- Secondary Football Clash: Full broadcast breakdown for a second major European/Domestic clash
-- NFL Marquee Game: "How to Watch [NFL Team A] vs [NFL Team B] Live: TV Networks & Kickoff Time"
-- NFL Team News: Key injury updates, quarterback status, and tactical matchups
-- NBA Primetime Battle: "Where to Stream [NBA Team A] vs [NBA Team B]: National TV & League Pass Guide"
-- UFC / Boxing Main Event: "How to Watch [Fighter A] vs [Fighter B] Live PPV: Start Time, Ringwalks & Fight Card"
-- Master Schedule: "Today's Live Sports Viewing Schedule: Global Kickoff Times & Verified Broadcast Directory"
+Structure the topical articles according to real-time search intent:
+- Matchday Broadcast Pillar: "Where to watch [Match] live stream: TV Channels, Kickoff Time & Streaming Guide"
+- Confirmed/Predicted Lineups: "Predicted Starting Lineups, Team News & Key Injury Reports for [Match]"
+- Head-to-Head & Stats: "Head-to-Head Record, 5-Game Form Guide & Tactical Analysis for [Match]"
+- Cord-Cutters & VPN Guide: "How to Watch Today's Matches from Anywhere (USA, UK, Canada, Australia, India) Legally"
+- Ball-by-ball / Minute-by-minute viewing guide: Channel breakdown for international tournaments
 
 Return a strictly valid JSON array of objects with keys:
 [
@@ -375,10 +429,10 @@ Return a strictly valid JSON array of objects with keys:
     "title": "High-CTR search headline targeted at Google queries like 'where to watch...', 'how to stream...', or 'predicted lineups'",
     "slug": "unique-kebab-case-slug-${Date.now()}",
     "summary": "150-160 character meta description crafted to achieve high organic Google click-through rate",
-    "content": "Rich HTML content (minimum 600 words) with H2, H3, broadcaster table by country (US, UK, CA, AU), key tactical storylines, and a 3-question Frequently Asked Questions (FAQ) section.",
-    "sport": "football" | "nba" | "nfl" | "ufc",
+    "content": "Rich HTML content (minimum 600 words) with H2, H3, broadcaster table by country (US, UK, CA, AU, IN), key tactical storylines, and a 3-question Frequently Asked Questions (FAQ) section.",
+    "sport": ${activeSlugsExample},
     "seoKeywords": "comma separated long-tail SEO keywords",
-    "matchDate": "2026-10-02T19:30:00Z",
+    "matchDate": "2026-10-04T14:00:00Z",
     "schemaJson": "valid JSON string combining Schema.org SportsEvent and FAQPage"
   }
 ]
@@ -481,19 +535,26 @@ Output ONLY raw JSON with no backticks, markdown, or comments.
 function buildFreshProgrammaticHypeCluster(
   count: number,
   autoPublish: boolean,
-  existingSlugs: Set<string>
+  existingSlugs: Set<string>,
+  activeSportsSlugs?: Set<string>
 ): GeneratedPostData[] {
+  let pool = EXTENDED_HYPE_MATCHES;
+  if (activeSportsSlugs && activeSportsSlugs.size > 0) {
+    const filtered = EXTENDED_HYPE_MATCHES.filter((m) => activeSportsSlugs.has(m.sport));
+    if (filtered.length > 0) pool = filtered;
+  }
+
   // Find matches that do NOT have a primary pillar post yet
-  const availableMatches = EXTENDED_HYPE_MATCHES.filter((m) => {
+  const availableMatches = pool.filter((m) => {
     const primarySlug = `where-to-watch-${m.teams.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-live-stream`;
     return !existingSlugs.has(primarySlug);
   });
 
   // Pick matches (if all used, shuffle and append unique suffix)
-  const candidateMatches = availableMatches.length >= 2 ? availableMatches : EXTENDED_HYPE_MATCHES;
+  const candidateMatches = availableMatches.length >= 2 ? availableMatches : pool;
   const primaryMatch = candidateMatches[Math.floor(Math.random() * candidateMatches.length)];
   const remainingCandidates = candidateMatches.filter((m) => m.teams !== primaryMatch.teams);
-  const secondaryMatch = remainingCandidates[Math.floor(Math.random() * remainingCandidates.length)] || EXTENDED_HYPE_MATCHES[3];
+  const secondaryMatch = remainingCandidates[Math.floor(Math.random() * remainingCandidates.length)] || pool[0];
 
   const salt = Date.now().toString().slice(-4);
   const primaryBaseSlug = primaryMatch.teams.toLowerCase().replace(/[^a-z0-9]+/g, '-');

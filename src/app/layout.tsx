@@ -50,16 +50,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+import { getActiveSports } from '@/lib/sports';
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const activeSports = await getActiveSports();
+
   return (
     <html lang="en" className="dark scroll-smooth" style={{ colorScheme: 'dark' }}>
       <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500/25 selection:text-white">
         <AuthProvider>
-          <Navbar />
+          <Navbar initialSports={activeSports} />
           <main className="flex-1 bg-slate-950">{children}</main>
           <Footer />
         </AuthProvider>
