@@ -1,28 +1,45 @@
 import { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
-import { HYPE_MATCH_POOL } from '@/lib/gemini';
+import { getAllTicketEvents } from '@/lib/tickets';
+import { getActiveSports } from '@/lib/sports';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://hypefixture.com';
 
-  // Static sport routes
-  const staticRoutes: MetadataRoute.Sitemap = [
+  // 1. Core Hub Routes
+  const coreRoutes: MetadataRoute.Sitemap = [
     { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: 'hourly', priority: 1.0 },
-    { url: `${baseUrl}/football`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/nba`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/nfl`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/ufc`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/tickets`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.95 },
+    { url: `${baseUrl}/live`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
   ];
 
-  // Programmatic match pages
-  const matchRoutes: MetadataRoute.Sitemap = HYPE_MATCH_POOL.map((m) => ({
-    url: `${baseUrl}/match/${m.teams.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+  // 2. Dynamic Active Sports
+  let sportRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const activeSports = await getActiveSports();
+    sportRoutes = activeSports.map((s) => ({
+      url: `${baseUrl}/${s.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    }));
+  } catch {
+    sportRoutes = [
+      { url: `${baseUrl}/football`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
+      { url: `${baseUrl}/cricket`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
+    ];
+  }
+
+  // 3. Programmatic Match & Event Ticket Pages
+  const ticketEvents = getAllTicketEvents();
+  const matchRoutes: MetadataRoute.Sitemap = ticketEvents.map((event) => ({
+    url: `${baseUrl}/match/${event.slug}`,
     lastModified: new Date(),
     changeFrequency: 'daily',
-    priority: 0.8,
+    priority: 0.9,
   }));
 
-  // Dynamic published posts from MySQL
+  // 4. Dynamic published SEO posts from MySQL
   let postRoutes: MetadataRoute.Sitemap = [];
   try {
     const posts = await prisma.post.findMany({
@@ -40,5 +57,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error fetching posts for sitemap:', err);
   }
 
-  return [...staticRoutes, ...matchRoutes, ...postRoutes];
+  return [...coreRoutes, ...sportRoutes, ...matchRoutes, ...postRoutes];
 }

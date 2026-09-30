@@ -76,8 +76,8 @@ export default function AdminHeader() {
     }
     if (pathname === '/admin/affiliates') {
       return {
-        title: 'Affiliate Conversions & EPC Hub',
-        subtitle: 'AffForce CPA, NordVPN, and FuboTV performance tracking and outbound links',
+        title: 'Ticket Partners & EPC Hub',
+        subtitle: 'SeatGeek, StubHub, and Viagogo performance tracking and outbound links',
       };
     }
     if (pathname === '/admin/sports') {

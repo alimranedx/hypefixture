@@ -98,13 +98,11 @@ export default async function DashboardPage() {
                     View Guide <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <Link
-                    href="/go/affforce"
-                    target="_blank"
-                    rel="sponsored nofollow"
-                    className="flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-white"
+                    href={`/match/${bm.matchSlug}#ticket-comparison`}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-white"
                   >
                     <Tv className="w-3 h-3 text-emerald-400" />
-                    Watch Stream
+                    Tickets &amp; Seats
                   </Link>
                 </div>
               </div>
@@ -115,7 +113,7 @@ export default async function DashboardPage() {
             <Bookmark className="w-8 h-8 text-slate-600 mx-auto" />
             <h3 className="text-sm font-bold text-white">No saved matches yet</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Click the bookmark icon on any match card across Football, NFL, NBA, or UFC to track it here.
+              Click the bookmark icon on any match card to track schedules and ticket prices here.
             </p>
             <Link
               href="/"

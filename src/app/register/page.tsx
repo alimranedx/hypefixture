@@ -84,7 +84,7 @@ export default function RegisterPage() {
             Create Free <span className="text-emerald-400">Account</span>
           </h1>
           <p className="text-xs text-slate-400">
-            Join HypeFixture to bookmark fixtures, track live streams, and receive match kickoff alerts.
+            Join HypeFixture to bookmark fixtures, track ticket prices, and receive match kickoff alerts.
           </p>
         </div>
 

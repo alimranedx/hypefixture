@@ -53,7 +53,7 @@ export default function LoginPage() {
             Sign In to <span className="text-emerald-400">HypeFixture</span>
           </h1>
           <p className="text-xs text-slate-400">
-            Access your saved matches, streaming bookmarks, and personalized sports alerts.
+            Access your saved match schedules, ticket alerts, and personalized fixture bookmarks.
           </p>
         </div>
 
