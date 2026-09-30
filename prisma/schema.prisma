@@ -159,3 +159,17 @@ model AffiliatePartner {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model SportCategory {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(100) // e.g. "Football (Soccer)", "Cricket", "Formula 1"
+  slug        String   @unique @db.VarChar(50) // e.g. "football", "cricket", "f1"
+  icon        String?  @default("🏆") @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  isActive    Boolean  @default(true) // Selected / Deselected for AI coverage
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}

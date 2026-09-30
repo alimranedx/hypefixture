@@ -218,6 +218,84 @@ export const HYPE_MATCH_POOL = EXTENDED_HYPE_MATCHES.slice(0, 6);
 /**
  * Intelligent AI Content Generator powered by Gemini with deduplication
  */
+/**
+ * Ordered priority of Gemini models:
+ * System first attempts the latest preview/flagship model (3.8). If Google's servers
+ * throw 503 (High Demand), 429 (Rate Limit), or temporary unavailable errors, the engine
+ * automatically falls back to 3.7, then 3.6, then 3.5, then 3.5-lite.
+ */
+export function getGeminiModelCascade(): string[] {
+  const envModel = process.env.GEMINI_MODEL?.trim();
+  const models = [
+    envModel,
+    'gemini-3.8-flash',
+    'gemini-3.7-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+  ].filter((m): m is string => Boolean(m && m.length > 0));
+
+  // Deduplicate preserving priority order
+  return Array.from(new Set(models));
+}
+
+export interface GeminiCascadeResult {
+  text: string;
+  model: string;
+  attemptedModels: { model: string; error?: string; success?: boolean }[];
+  fallbackOccurred: boolean;
+}
+
+/**
+ * Executes a Gemini prompt through the model cascade with automatic failover
+ */
+export async function callGeminiWithCascade(
+  ai: GoogleGenAI,
+  prompt: string
+): Promise<GeminiCascadeResult> {
+  const cascade = getGeminiModelCascade();
+  const attemptedModels: { model: string; error?: string; success?: boolean }[] = [];
+  let lastError: any = null;
+
+  for (let i = 0; i < cascade.length; i++) {
+    const model = cascade[i];
+    try {
+      console.log(`[HypeFixture Gemini Engine] Attempting model [${i + 1}/${cascade.length}]: ${model}...`);
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+      });
+
+      if (response && response.text) {
+        attemptedModels.push({ model, success: true });
+        const fallbackOccurred = i > 0;
+        if (fallbackOccurred) {
+          console.log(`[HypeFixture Gemini Engine] ⚡ Auto-failover SUCCESS: Primary model congested; generated using fallback model "${model}"!`);
+        } else {
+          console.log(`[HypeFixture Gemini Engine] ⚡ Prompt SUCCESS using latest model "${model}"!`);
+        }
+
+        return {
+          text: response.text,
+          model,
+          attemptedModels,
+          fallbackOccurred,
+        };
+      }
+    } catch (err: any) {
+      lastError = err;
+      const errMsg = err?.message || String(err);
+      console.warn(`[HypeFixture Gemini Engine] ⚠️ Model "${model}" failed (${errMsg.slice(0, 110)}...). Cascading to next fallback model...`);
+      attemptedModels.push({ model, error: errMsg });
+      // Brief pause between cascade attempts
+      await new Promise((r) => setTimeout(r, 600));
+    }
+  }
+
+  throw lastError || new Error(`All candidate Gemini models (${cascade.join(', ')}) failed.`);
+}
+
 export interface GenerateHypeResult {
   posts: GeneratedPostData[];
   telemetry: {
@@ -228,12 +306,15 @@ export interface GenerateHypeResult {
     apiKeyPreview: string;
     promptPreview?: string;
     error?: string;
+    modelsAttempted?: string[];
+    fallbackOccurred?: boolean;
+    summaryLog?: string;
   };
 }
 
 /**
- * Autonomous Content Engine: Queries Gemini 3.8 Flash to generate daily cluster.
- * Tracks full telemetry (model, execution latency, prompt) for transparent auditing.
+ * Autonomous Content Engine: Generates daily sports article cluster via Gemini.
+ * Features automatic model failover (3.8 -> 3.7 -> 3.6 -> 3.5) and detailed audit telemetry.
  */
 export async function generateDailyHypePosts(
   count: number = 5,
@@ -241,6 +322,7 @@ export async function generateDailyHypePosts(
 ): Promise<GenerateHypeResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   const apiKeyPreview = apiKey ? `${apiKey.substring(0, 8)}...${apiKey.slice(-4)}` : 'NOT_CONFIGURED';
+  const defaultModel = getGeminiModelCascade()[0] || 'gemini-3.8-flash';
 
   // 1. Fetch existing slugs and titles from MySQL to guarantee 100% NON-DUPLICATE topics
   const existingPosts = await prisma.post.findMany({
@@ -254,7 +336,7 @@ export async function generateDailyHypePosts(
       posts: [],
       telemetry: {
         source: 'GOOGLE_GEMINI_LIVE',
-        model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+        model: defaultModel,
         latencyMs: 0,
         timestamp: new Date().toISOString(),
         apiKeyPreview: 'NOT_CONFIGURED',
@@ -303,32 +385,11 @@ Return a strictly valid JSON array of objects with keys:
 Output ONLY raw JSON with no backticks, markdown, or comments.
 `;
 
-    let response: any = null;
-    let lastError: any = null;
-    const maxAttempts = 4;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        response = await ai.models.generateContent({
-          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
-          contents: prompt,
-        });
-        if (response?.text) break;
-      } catch (err: any) {
-        lastError = err;
-        console.warn(`Gemini attempt ${attempt}/${maxAttempts} failed:`, err.message || err);
-        if (attempt < maxAttempts) {
-          await new Promise((r) => setTimeout(r, 3000 * attempt));
-        }
-      }
-    }
-
-    if (!response || !response.text) {
-      throw lastError || new Error('Gemini API call timed out or returned empty response after retries');
-    }
+    // Cascade through models: 3.8 -> 3.7 -> 3.6 -> 3.5 -> 3.5-lite
+    const cascadeResult = await callGeminiWithCascade(ai, prompt);
 
     const latencyMs = Date.now() - t0;
-    const text = response.text || '';
+    const text = cascadeResult.text || '';
     let cleanJson = text.replace(/```json/gi, '').replace(/```/g, '').trim();
     const firstBracket = cleanJson.indexOf('[');
     const lastBracket = cleanJson.lastIndexOf(']');
@@ -352,15 +413,30 @@ Output ONLY raw JSON with no backticks, markdown, or comments.
         };
       });
 
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString();
+      const attemptedSummary = cascadeResult.attemptedModels
+        .map((a) => (a.success ? `${a.model} [Success]` : `${a.model} [Busy/503]`))
+        .join(' ➔ ');
+
+      const summaryLog = `Created ${posts.length} posts at ${timeStr} via model "${cascadeResult.model}"${
+        cascadeResult.fallbackOccurred ? ` (Auto-recovered: ${attemptedSummary})` : ''
+      }`;
+
+      console.log(`[HypeFixture Content Engine] ${summaryLog} in ${latencyMs}ms`);
+
       return {
         posts,
         telemetry: {
           source: 'GOOGLE_GEMINI_LIVE',
-          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+          model: cascadeResult.model,
           latencyMs,
-          timestamp: new Date().toISOString(),
+          timestamp: now.toISOString(),
           apiKeyPreview,
           promptPreview: `Generate ${count} articles across Football, NFL, NBA, UFC (excluding ${existingPosts.length} existing posts)`,
+          modelsAttempted: cascadeResult.attemptedModels.map((a) => a.model),
+          fallbackOccurred: cascadeResult.fallbackOccurred,
+          summaryLog,
         },
       };
     } else {
@@ -368,26 +444,32 @@ Output ONLY raw JSON with no backticks, markdown, or comments.
         posts: [],
         telemetry: {
           source: 'GOOGLE_GEMINI_LIVE',
-          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+          model: cascadeResult.model,
           latencyMs,
           timestamp: new Date().toISOString(),
           apiKeyPreview,
           error: 'Gemini returned an empty array or invalid article format. No posts were created.',
+          modelsAttempted: cascadeResult.attemptedModels.map((a) => a.model),
+          fallbackOccurred: cascadeResult.fallbackOccurred,
+          summaryLog: `Failed at ${new Date().toLocaleTimeString()}: Invalid format received from ${cascadeResult.model}.`,
         },
       };
     }
   } catch (err: any) {
-    console.warn('Gemini live call error:', err.message || err);
+    console.warn('Gemini live call error across cascade:', err.message || err);
     const latencyMs = Date.now() - t0;
+    const now = new Date();
+    const cascadeModels = getGeminiModelCascade();
     return {
       posts: [],
       telemetry: {
         source: 'GOOGLE_GEMINI_LIVE',
-        model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+        model: cascadeModels[0] || 'gemini-3.8-flash',
         latencyMs,
-        timestamp: new Date().toISOString(),
+        timestamp: now.toISOString(),
         apiKeyPreview,
-        error: `Gemini AI generation failed: ${err.message || err}. No posts were created.`,
+        error: `Gemini AI generation failed across cascade (${cascadeModels.join(', ')}): ${err.message || err}. No posts were created.`,
+        summaryLog: `Failed at ${now.toLocaleTimeString()} after attempting cascade (${cascadeModels.join(' -> ')}).`,
       },
     };
   }

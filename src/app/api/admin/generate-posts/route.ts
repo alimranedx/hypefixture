@@ -58,12 +58,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const timeStr = new Date(telemetry.timestamp).toLocaleTimeString();
+    const shortLog = telemetry.summaryLog || `Generated ${saved.length} posts at ${timeStr} using model ${telemetry.model}`;
+
     return NextResponse.json({
       success: true,
-      message: `⚡ Google Gemini live generated ${saved.length} fresh articles in ${telemetry.latencyMs}ms!${
-        settings.autoIndexNow ? ' Pushed to IndexNow.' : ''
-      }${settings.autoShareSocial ? ' Syndicated to social media.' : ''}`,
+      message: `⚡ Google Gemini generated ${saved.length} articles at ${timeStr} using model "${telemetry.model}" in ${telemetry.latencyMs}ms!${
+        telemetry.fallbackOccurred ? ' (Recovered via auto-failover).' : ''
+      }${settings.autoIndexNow ? ' Pushed to IndexNow.' : ''}${settings.autoShareSocial ? ' Syndicated to social media.' : ''}`,
       count: saved.length,
+      model: telemetry.model,
+      createdTime: timeStr,
+      shortLog,
       telemetry,
       posts: saved,
     });

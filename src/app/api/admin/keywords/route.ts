@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { GoogleGenAI } from '@google/genai';
+import { callGeminiWithCascade } from '@/lib/gemini';
 
 export async function GET() {
   const keywords = await prisma.keyword.findMany({
@@ -49,12 +50,9 @@ export async function POST(request: NextRequest) {
       try {
         const ai = new GoogleGenAI({ apiKey });
         const prompt = `Write an in-depth 700-word sports SEO broadcast guide for the search query: "${targetKw}". Sport: ${kwSport}. Include H2 headings, broadcaster breakdown by country (US, UK, CA, AU), and a call to action box. Output raw HTML only.`;
-        const resp = await ai.models.generateContent({
-          model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
-          contents: prompt,
-        });
+        const cascadeResult = await callGeminiWithCascade(ai, prompt);
 
-        const articleContent = (resp.text || '').replace(/```html/gi, '').replace(/```/g, '').trim();
+        const articleContent = (cascadeResult.text || '').replace(/```html/gi, '').replace(/```/g, '').trim();
         if (!articleContent) {
           return NextResponse.json({
             error: 'Gemini AI returned empty content. No post was created.',
@@ -85,10 +83,20 @@ export async function POST(request: NextRequest) {
           data: { targetSlug: createdPost.slug, currentRank: 3 },
         });
 
+        const createdTime = new Date().toLocaleTimeString();
+        const shortLog = `Article for "${targetKw}" created at ${createdTime} via model "${cascadeResult.model}"${
+          cascadeResult.fallbackOccurred ? ' (auto-recovered from busy model)' : ''
+        }`;
+
+        console.log(`[HypeFixture Keywords AI] ${shortLog}`);
+
         return NextResponse.json({
           success: true,
-          message: `Generated and published targeted article for keyword "${targetKw}" via Gemini!`,
+          message: `Generated and published targeted article for keyword "${targetKw}" via Gemini (${cascadeResult.model})!`,
           post: createdPost,
+          model: cascadeResult.model,
+          timestamp: new Date().toISOString(),
+          shortLog,
         });
       } catch (err: any) {
         return NextResponse.json({

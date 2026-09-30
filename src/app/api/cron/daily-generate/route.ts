@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     success: true,
     triggeredAt: new Date().toISOString(),
+    model: telemetry.model,
+    shortLog: telemetry.summaryLog,
     telemetry,
     postsGenerated: saved.length,
     articles: saved.map((s) => ({ title: s.title, slug: s.slug })),

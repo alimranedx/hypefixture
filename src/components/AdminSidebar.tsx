@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard,
   Sparkles,
   FileText,
+  FilePlus,
   Search,
   TrendingUp,
   DollarSign,
@@ -20,11 +21,12 @@ import {
   Menu,
   X,
   ChevronRight,
-  Tv,
+  ChevronDown,
   Radio,
-  Sliders,
   Share2,
+  Trophy,
 } from 'lucide-react';
+import { useAdmin } from '@/context/AdminContext';
 
 interface AdminSidebarProps {
   activeTab?: string;
@@ -42,63 +44,113 @@ interface AdminSidebarProps {
   };
 }
 
-export default function AdminSidebar({
-  activeTab = 'overview',
-  onSelectTab,
-  postCount = 0,
-  keywordCount = 0,
-  pendingAdminCount = 0,
-  generatingAi = false,
-  onGenerateAi,
-  user,
-}: AdminSidebarProps) {
-  const router = useRouter();
+export default function AdminSidebar(props: AdminSidebarProps) {
+  const pathname = usePathname();
+  const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  // Optional Context fallback (if rendered inside AdminProvider)
+  let contextValues: any = null;
+  try {
+    contextValues = useAdmin();
+  } catch {
+    contextValues = null;
+  }
+
+  const currentUser = props.user || session?.user;
+  const isSuperAdmin = (currentUser as any)?.role === 'SUPER_ADMIN';
+
+  const effectivePostCount =
+    props.postCount !== undefined
+      ? props.postCount
+      : contextValues?.posts?.length ?? 0;
+
+  const effectiveKeywordCount =
+    props.keywordCount !== undefined
+      ? props.keywordCount
+      : contextValues?.keywords?.length ?? 0;
+
+  const effectivePendingAdminCount =
+    props.pendingAdminCount !== undefined
+      ? props.pendingAdminCount
+      : (contextValues?.adminsList || []).filter((a: any) => !a.isApproved).length;
+
+  const effectiveSportsCount =
+    (contextValues?.sports || []).filter((s: any) => s.isActive).length;
+
+  const isGenerating =
+    props.generatingAi !== undefined
+      ? props.generatingAi
+      : contextValues?.generatingAi ?? false;
+
+  const triggerGenerate =
+    props.onGenerateAi || contextValues?.handleGeneratePosts || (() => {});
 
   const navItems = [
     {
       id: 'overview',
       name: 'Overview',
+      href: '/admin/dashboard',
       icon: LayoutDashboard,
       desc: 'System health & vital stats',
     },
     {
       id: 'ai-studio',
       name: 'AI Editorial Studio',
+      href: '/admin/ai-studio',
       icon: Sparkles,
       desc: 'Autonomous cluster pipeline',
     },
     {
+      id: 'sports',
+      name: 'Sports Coverage',
+      href: '/admin/sports',
+      icon: Trophy,
+      desc: 'Dynamic coverage & AI target',
+      count: effectiveSportsCount,
+    },
+    {
       id: 'posts',
       name: 'Post Management',
+      href: '/admin/posts',
       icon: FileText,
       desc: 'Articles, drafts & edits',
-      count: postCount,
+      count: effectivePostCount,
+    },
+    {
+      id: 'new-post',
+      name: 'Create New Article',
+      href: '/admin/posts/new',
+      icon: FilePlus,
+      desc: 'Publish custom sports post',
+      highlight: true,
     },
     {
       id: 'keywords',
       name: 'Keyword Research',
+      href: '/admin/keywords',
       icon: Search,
       desc: 'High-CPC sports terms',
-      count: keywordCount,
+      count: effectiveKeywordCount,
     },
     {
       id: 'serp',
       name: 'Website SERP Ranks',
+      href: '/admin/serp',
       icon: TrendingUp,
       desc: 'Target keyword rankings',
     },
     {
       id: 'syndication',
       name: 'Social & SEO Hub',
+      href: '/admin/syndication',
       icon: Share2,
       desc: 'Auto-share & Instant IndexNow',
     },
     {
       id: 'affiliates',
       name: 'Affiliate & EPC Hub',
+      href: '/admin/affiliates',
       icon: DollarSign,
       desc: 'AffForce, VPN, FuboTV',
     },
@@ -107,21 +159,35 @@ export default function AdminSidebar({
           {
             id: 'security',
             name: 'Super Admin Governance',
+            href: '/admin/governance',
             icon: Crown,
             desc: 'Admin approvals & roles',
-            badge: pendingAdminCount,
+            badge: effectivePendingAdminCount,
           },
         ]
       : []),
   ];
 
-  const handleTabClick = (tabId: string) => {
-    setMobileOpen(false);
-    if (onSelectTab) {
-      onSelectTab(tabId);
-    } else {
-      router.push(`/admin/dashboard?tab=${tabId}`);
+  const checkIsActive = (item: (typeof navItems)[0]) => {
+    // If explicit activeTab passed for legacy monolith mode
+    if (props.activeTab) {
+      if (item.id === 'security') return props.activeTab === 'security';
+      return props.activeTab === item.id;
     }
+
+    if (item.href === '/admin/dashboard') {
+      return pathname === '/admin/dashboard' || pathname === '/admin' || pathname === '/admin/overview';
+    }
+    if (item.href === '/admin/posts') {
+      return pathname === '/admin/posts' || (pathname.startsWith('/admin/posts/') && pathname !== '/admin/posts/new') || pathname.startsWith('/admin/post/');
+    }
+    if (item.href === '/admin/sports') {
+      return pathname === '/admin/sports' || pathname.startsWith('/admin/sports/');
+    }
+    if (item.href === '/admin/governance') {
+      return pathname === '/admin/governance' || pathname === '/admin/security';
+    }
+    return pathname === item.href;
   };
 
   const sidebarContent = (
@@ -161,34 +227,32 @@ export default function AdminSidebar({
       </div>
 
       {/* Quick Generate AI Cluster Button */}
-      {onGenerateAi && (
-        <div className="p-4 border-b border-slate-800/80 bg-slate-900/40">
-          <button
-            onClick={onGenerateAi}
-            disabled={generatingAi}
-            className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 text-slate-950 font-black text-xs transition shadow-lg shadow-emerald-500/20"
-          >
-            {generatingAi ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>AI Generating...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-                <span>Generate 5 Posts Now</span>
-              </>
-            )}
-          </button>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 pt-2 px-1">
-            <span className="flex items-center gap-1">
-              <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
-              Gemini 3.8 Flash
-            </span>
-            <span className="text-emerald-400 font-bold">Online</span>
-          </div>
+      <div className="p-4 border-b border-slate-800/80 bg-slate-900/40">
+        <button
+          onClick={() => triggerGenerate()}
+          disabled={isGenerating}
+          className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 text-slate-950 font-black text-xs transition shadow-lg shadow-emerald-500/20"
+        >
+          {isGenerating ? (
+            <>
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <span>AI Generating...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
+              <span>Generate 5 Posts Now</span>
+            </>
+          )}
+        </button>
+        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-2 px-1">
+          <span className="flex items-center gap-1" title="Priority Cascade: 3.8 ➔ 3.7 ➔ 3.6 ➔ 3.5">
+            <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
+            Gemini Auto-Cascade
+          </span>
+          <span className="text-emerald-400 font-bold">Online</span>
         </div>
-      )}
+      </div>
 
       {/* Navigation Links */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
@@ -198,14 +262,23 @@ export default function AdminSidebar({
 
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = checkIsActive(item);
+
           return (
-            <button
+            <Link
               key={item.id}
-              onClick={() => handleTabClick(item.id)}
+              href={item.href}
+              onClick={() => {
+                setMobileOpen(false);
+                if (props.onSelectTab) {
+                  props.onSelectTab(item.id);
+                }
+              }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition group text-left ${
                 isActive
                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                  : item.highlight
+                  ? 'text-emerald-300 hover:text-white bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent'
               }`}
             >
@@ -214,6 +287,8 @@ export default function AdminSidebar({
                   className={`p-1.5 rounded-lg transition ${
                     isActive
                       ? 'bg-emerald-500/20 text-emerald-400'
+                      : item.highlight
+                      ? 'bg-emerald-500/20 text-emerald-300'
                       : 'bg-slate-900 text-slate-400 group-hover:text-white'
                   }`}
                 >
@@ -228,7 +303,7 @@ export default function AdminSidebar({
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                {item.count !== undefined && (
+                {item.count !== undefined && item.count > 0 && (
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
                       isActive
@@ -239,32 +314,33 @@ export default function AdminSidebar({
                     {item.count}
                   </span>
                 )}
+
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 font-bold">
+                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                     {item.badge}
                   </span>
                 )}
+
                 <ChevronRight
-                  className={`w-3.5 h-3.5 transition ${
-                    isActive ? 'text-emerald-400 opacity-100' : 'text-slate-600 opacity-0 group-hover:opacity-100'
+                  className={`w-3.5 h-3.5 transition opacity-0 group-hover:opacity-100 ${
+                    isActive ? 'opacity-100 text-emerald-400' : 'text-slate-600'
                   }`}
                 />
               </div>
-            </button>
+            </Link>
           );
         })}
       </div>
 
       {/* Admin User Profile & Footer Section */}
       <div className="p-3 border-t border-slate-800 bg-slate-950 space-y-2">
-        {/* User Card */}
         <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 truncate">
-            {user?.image ? (
+            {currentUser?.image ? (
               <img
-                src={user.image}
-                alt={user.name || 'Admin'}
-                className="w-8 h-8 rounded-full border border-emerald-500/50 shrink-0"
+                src={currentUser.image}
+                alt={currentUser.name || 'Admin'}
+                className="w-8 h-8 rounded-full border border-emerald-500/50 shrink-0 object-cover"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
@@ -273,15 +349,14 @@ export default function AdminSidebar({
             )}
             <div className="truncate">
               <span className="block text-xs font-bold text-white truncate">
-                {user?.name || 'Administrator'}
+                {currentUser?.name || 'Administrator'}
               </span>
               <span className="block text-[10px] text-slate-400 truncate">
-                {user?.email || 'admin@hypefixture.com'}
+                {currentUser?.email || 'admin@hypefixture.com'}
               </span>
             </div>
           </div>
 
-          {/* Role badge */}
           {isSuperAdmin ? (
             <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40">
               SUPER
@@ -293,7 +368,6 @@ export default function AdminSidebar({
           )}
         </div>
 
-        {/* Action Links */}
         <div className="grid grid-cols-2 gap-1.5 pt-1">
           <Link
             href="/"
@@ -345,7 +419,7 @@ export default function AdminSidebar({
         </button>
       </div>
 
-      {/* Mobile Backdrop & Drawer */}
+      {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div

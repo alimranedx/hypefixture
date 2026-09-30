@@ -34,6 +34,70 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ posts });
 }
 
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+
+    if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const {
+      title,
+      slug,
+      summary,
+      content,
+      sport,
+      status,
+      featuredImage,
+      seoKeywords,
+      matchDate,
+      schemaJson,
+    } = body;
+
+    if (!title || !title.trim()) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+
+    const cleanTitle = sanitizePlainText(title);
+    let baseSlug = (slug || cleanTitle).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!baseSlug) baseSlug = `sports-post-${Date.now()}`;
+
+    // Ensure slug uniqueness
+    let uniqueSlug = baseSlug;
+    const existing = await prisma.post.findUnique({ where: { slug: uniqueSlug } });
+    if (existing) {
+      uniqueSlug = `${uniqueSlug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const cleanSummary = sanitizePlainText(summary || `${cleanTitle} broadcast and viewing guide.`);
+    const cleanContent = sanitizeArticleHtml(content || `<p>Upcoming match details for ${cleanTitle}.</p>`);
+    const cleanSport = sanitizePlainText(sport || 'football').toLowerCase();
+    const cleanKeywords = seoKeywords ? sanitizePlainText(seoKeywords) : cleanTitle;
+
+    const created = await prisma.post.create({
+      data: {
+        title: cleanTitle,
+        slug: uniqueSlug,
+        summary: cleanSummary,
+        content: cleanContent,
+        sport: cleanSport,
+        status: status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED',
+        featuredImage: featuredImage || null,
+        seoKeywords: cleanKeywords,
+        matchDate: matchDate || new Date().toISOString(),
+        schemaJson: schemaJson || null,
+      },
+    });
+
+    return NextResponse.json({ success: true, post: created });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Failed to create post' }, { status: 500 });
+  }
+}
+
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
