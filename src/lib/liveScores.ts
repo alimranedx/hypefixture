@@ -592,112 +592,146 @@ const SEED_BACKUP_MATCHES: LiveMatchItem[] = [
   },
 ];
 
-// Main aggregator fetching ESPN live feeds across Football, Cricket, NFL, Rugby, and NBA
-export async function getAggregatedLiveScores(sportFilter?: SportCategory | 'all'): Promise<LiveScoreResponse> {
-  const fetchTimeout = 4000; // 4s timeout per source to stay ultra fast
+// In-memory cache & request coalescing for high-throughput live streaming
+interface LiveCacheEntry {
+  timestamp: number;
+  data: LiveMatchItem[];
+}
 
-  const endpoints = [
-    {
-      sport: 'cricket' as SportCategory,
-      url: 'https://site.api.espn.com/apis/site/v2/sports/cricket/scorepanel',
-      parser: parseCricketMatches,
-    },
-    {
-      sport: 'football' as SportCategory,
-      url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/scorepanel',
-      parser: parseSoccerMatches,
-    },
-    {
-      sport: 'football' as SportCategory,
-      url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',
-      parser: parseSoccerMatches,
-    },
-    {
-      sport: 'nfl' as SportCategory,
-      url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
-      parser: parseNflMatches,
-    },
-    {
-      sport: 'rugby' as SportCategory,
-      url: 'https://site.api.espn.com/apis/site/v2/sports/rugby/scorepanel',
-      parser: parseRugbyMatches,
-    },
-    {
-      sport: 'nba' as SportCategory,
-      url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
-      parser: parseNbaMatches,
-    },
-  ];
+let inMemoryLiveCache: LiveCacheEntry | null = null;
+let activeFetchPromise: Promise<LiveMatchItem[]> | null = null;
 
-  const results = await Promise.allSettled(
-    endpoints.map(async ({ parser, url }) => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), fetchTimeout);
-      try {
-        const res = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            Accept: 'application/json',
-          },
-          next: { revalidate: 20 },
-        });
-        clearTimeout(timer);
-        if (!res.ok) return [];
-        const json = await res.json();
-        return parser(json);
-      } catch (err) {
-        clearTimeout(timer);
-        return [];
-      }
-    })
-  );
+async function fetchFreshMatches(): Promise<LiveMatchItem[]> {
+  // If cache is younger than 5 seconds, serve cached to prevent upstream rate limiting
+  if (inMemoryLiveCache && Date.now() - inMemoryLiveCache.timestamp < 5000) {
+    return inMemoryLiveCache.data;
+  }
 
-  let allMatches: LiveMatchItem[] = [];
-  const seenIds = new Set<string>();
+  // Coalesce in-flight requests
+  if (activeFetchPromise) {
+    return activeFetchPromise;
+  }
 
-  for (const res of results) {
-    if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-      for (const m of res.value) {
-        // Prevent duplicate match IDs
-        if (!seenIds.has(m.id)) {
-          seenIds.add(m.id);
-          allMatches.push(m);
+  activeFetchPromise = (async () => {
+    const fetchTimeout = 4000; // 4s timeout per source
+
+    const endpoints = [
+      {
+        sport: 'cricket' as SportCategory,
+        url: 'https://site.api.espn.com/apis/site/v2/sports/cricket/scorepanel',
+        parser: parseCricketMatches,
+      },
+      {
+        sport: 'football' as SportCategory,
+        url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/scorepanel',
+        parser: parseSoccerMatches,
+      },
+      {
+        sport: 'football' as SportCategory,
+        url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',
+        parser: parseSoccerMatches,
+      },
+      {
+        sport: 'nfl' as SportCategory,
+        url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
+        parser: parseNflMatches,
+      },
+      {
+        sport: 'rugby' as SportCategory,
+        url: 'https://site.api.espn.com/apis/site/v2/sports/rugby/scorepanel',
+        parser: parseRugbyMatches,
+      },
+      {
+        sport: 'nba' as SportCategory,
+        url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
+        parser: parseNbaMatches,
+      },
+    ];
+
+    const results = await Promise.allSettled(
+      endpoints.map(async ({ parser, url }) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), fetchTimeout);
+        try {
+          const res = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              Accept: 'application/json',
+            },
+            next: { revalidate: 10 },
+          });
+          clearTimeout(timer);
+          if (!res.ok) return [];
+          const json = await res.json();
+          return parser(json);
+        } catch (err) {
+          clearTimeout(timer);
+          return [];
+        }
+      })
+    );
+
+    let allMatches: LiveMatchItem[] = [];
+    const seenIds = new Set<string>();
+
+    for (const res of results) {
+      if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+        for (const m of res.value) {
+          if (!seenIds.has(m.id)) {
+            seenIds.add(m.id);
+            allMatches.push(m);
+          }
         }
       }
     }
-  }
 
-  // Count live matches per sport from live feed
-  const liveCountBySport: Record<SportCategory, number> = {
-    football: 0,
-    cricket: 0,
-    nfl: 0,
-    rugby: 0,
-    nba: 0,
-  };
+    // Count live matches per sport from live feed
+    const liveCountBySport: Record<SportCategory, number> = {
+      football: 0,
+      cricket: 0,
+      nfl: 0,
+      rugby: 0,
+      nba: 0,
+    };
 
-  allMatches.forEach((m) => {
-    if (m.isLive) {
-      liveCountBySport[m.sport] = (liveCountBySport[m.sport] || 0) + 1;
+    allMatches.forEach((m) => {
+      if (m.isLive) {
+        liveCountBySport[m.sport] = (liveCountBySport[m.sport] || 0) + 1;
+      }
+    });
+
+    // Supplement with premium fallback match if 0 live matches running for a core sport
+    for (const backup of SEED_BACKUP_MATCHES) {
+      if (liveCountBySport[backup.sport] === 0) {
+        allMatches.unshift(backup);
+        liveCountBySport[backup.sport] = 1;
+      }
     }
+
+    // Sort matches: In-play LIVE matches first, then upcoming by start time
+    allMatches.sort((a, b) => {
+      if (a.isLive && !b.isLive) return -1;
+      if (!a.isLive && b.isLive) return 1;
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
+
+    inMemoryLiveCache = {
+      timestamp: Date.now(),
+      data: allMatches,
+    };
+
+    return allMatches;
+  })().finally(() => {
+    activeFetchPromise = null;
   });
 
-  // If a major sport has ZERO live matches currently in-play (e.g. NFL off-peak on Wednesday afternoon),
-  // supplement with premium realistic live match so users testing the feature always experience full interactive live scores!
-  for (const backup of SEED_BACKUP_MATCHES) {
-    if (liveCountBySport[backup.sport] === 0) {
-      allMatches.unshift(backup);
-      liveCountBySport[backup.sport] = 1;
-    }
-  }
+  return activeFetchPromise;
+}
 
-  // Sort matches: In-play LIVE matches first, then upcoming by start time
-  allMatches.sort((a, b) => {
-    if (a.isLive && !b.isLive) return -1;
-    if (!a.isLive && b.isLive) return 1;
-    return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-  });
+// Main aggregator fetching ESPN live feeds across Football, Cricket, NFL, Rugby, and NBA
+export async function getAggregatedLiveScores(sportFilter?: SportCategory | 'all'): Promise<LiveScoreResponse> {
+  const allMatches = await fetchFreshMatches();
 
   // Filter by sport if specified
   const filteredMatches = sportFilter && sportFilter !== 'all'

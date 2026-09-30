@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -17,6 +17,11 @@ import {
   AlertCircle,
   Play,
   Volume2,
+  VolumeX,
+  Zap,
+  Activity,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 import { LiveMatchItem, LiveScoreResponse, SportCategory } from '@/lib/liveScores';
 
@@ -36,6 +41,32 @@ const SPORTS_TABS: Array<{ id: SportCategory | 'all'; label: string; emoji: stri
   { id: 'nba', label: 'NBA', emoji: '🏀' },
 ];
 
+// Clean Web Audio synthesizer for score notification chimes
+function playScoreChime() {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
+
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch {
+    // Audio might be prevented before first user interaction
+  }
+}
+
 export default function LiveMatchesSection({
   initialSport = 'all',
   title = 'Live Match Center',
@@ -49,54 +80,182 @@ export default function LiveMatchesSection({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'polling'>('connecting');
+  const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState<Set<string>>(new Set());
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
 
-  // Fetch live matches from our aggregator API
-  const fetchLiveMatches = useCallback(
-    async (showRefreshIndicator = false) => {
-      if (showRefreshIndicator) {
-        setIsRefreshing(true);
-      }
-      try {
-        const params = new URLSearchParams();
-        if (selectedSport !== 'all') {
-          params.set('sport', selectedSport);
-        }
-        if (onlyLive) {
-          params.set('onlyLive', 'true');
-        }
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const fallbackPollRef = useRef<NodeJS.Timeout | null>(null);
+  const soundEnabledRef = useRef<boolean>(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
 
-        const res = await fetch(`/api/live-matches?${params.toString()}`);
-        if (!res.ok) throw new Error('Failed to fetch live matches');
-        const json: LiveScoreResponse = await res.json();
-        setData(json);
+  // Process incoming score data and detect changes for visual flash & chime
+  const handleIncomingData = useCallback((incoming: LiveScoreResponse) => {
+    setData((prev) => {
+      if (!prev || !prev.matches) {
         setLastUpdated(new Date());
-      } catch (err) {
-        console.error('Error in fetchLiveMatches:', err);
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
+        return incoming;
       }
-    },
-    [selectedSport, onlyLive]
-  );
 
-  // Initial fetch and on filter changes
+      const prevMap = new Map(prev.matches.map((m) => [m.id, m]));
+      const changed = new Set<string>();
+
+      for (const m of incoming.matches) {
+        const p = prevMap.get(m.id);
+        if (p) {
+          const scoreDiff =
+            p.homeTeam.score !== m.homeTeam.score ||
+            p.awayTeam.score !== m.awayTeam.score ||
+            p.clock !== m.clock ||
+            p.statusDetail !== m.statusDetail;
+
+          if (scoreDiff && m.isLive) {
+            changed.add(m.id);
+          }
+        }
+      }
+
+      if (changed.size > 0) {
+        setRecentlyUpdatedIds((curr) => {
+          const next = new Set(curr);
+          changed.forEach((id) => next.add(id));
+          return next;
+        });
+
+        if (soundEnabledRef.current) {
+          playScoreChime();
+        }
+
+        // Highlight flash stays active for 4 seconds
+        setTimeout(() => {
+          setRecentlyUpdatedIds((curr) => {
+            const next = new Set(curr);
+            changed.forEach((id) => next.delete(id));
+            return next;
+          });
+        }, 4000);
+      }
+
+      setLastUpdated(new Date());
+      return incoming;
+    });
+
+    setIsLoading(false);
+    setIsRefreshing(false);
+  }, []);
+
+  // Manual fallback poll if SSE is not available or disconnected
+  const manualFetch = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setIsRefreshing(true);
+    try {
+      const params = new URLSearchParams();
+      if (selectedSport !== 'all') params.set('sport', selectedSport);
+      if (onlyLive) params.set('onlyLive', 'true');
+
+      const res = await fetch(`/api/live-matches?${params.toString()}`);
+      if (!res.ok) throw new Error('Fetch failed');
+      const json: LiveScoreResponse = await res.json();
+      handleIncomingData(json);
+    } catch (err) {
+      console.error('Fallback fetch error:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [selectedSport, onlyLive, handleIncomingData]);
+
+  // Real-time Server-Sent Events (SSE) Socket Connection
   useEffect(() => {
     setIsLoading(true);
-    fetchLiveMatches(false);
-  }, [fetchLiveMatches]);
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    if (fallbackPollRef.current) {
+      clearInterval(fallbackPollRef.current);
+      fallbackPollRef.current = null;
+    }
 
-  // Auto-refresh interval (every 25 seconds)
+    setConnectionStatus('connecting');
+
+    const params = new URLSearchParams();
+    if (selectedSport !== 'all') params.set('sport', selectedSport);
+    if (onlyLive) params.set('onlyLive', 'true');
+
+    // Create browser EventSource streaming connection
+    try {
+      const es = new EventSource(`/api/live-matches/stream?${params.toString()}`);
+      eventSourceRef.current = es;
+
+      es.addEventListener('connected', () => {
+        setConnectionStatus('connected');
+      });
+
+      es.addEventListener('snapshot', (e: MessageEvent) => {
+        try {
+          const snapshot = JSON.parse(e.data);
+          handleIncomingData(snapshot);
+          setConnectionStatus('connected');
+        } catch {
+          // ignore parse error
+        }
+      });
+
+      es.addEventListener('score-update', (e: MessageEvent) => {
+        try {
+          const update = JSON.parse(e.data);
+          handleIncomingData(update);
+          setConnectionStatus('connected');
+        } catch {
+          // ignore parse error
+        }
+      });
+
+      es.onerror = () => {
+        // EventSource will auto-retry in the background
+        setConnectionStatus('reconnecting');
+      };
+    } catch (err) {
+      console.warn('SSE not supported or blocked, switching to resilient polling loop:', err);
+      setConnectionStatus('polling');
+      manualFetch(false);
+      fallbackPollRef.current = setInterval(() => {
+        manualFetch(false);
+      }, 7000);
+    }
+
+    // Safety fallback: if EventSource does not receive snapshot within 4s, trigger initial manual fetch
+    const timeoutTimer = setTimeout(() => {
+      if (isLoading) {
+        manualFetch(false);
+      }
+    }, 4000);
+
+    return () => {
+      clearTimeout(timeoutTimer);
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      if (fallbackPollRef.current) {
+        clearInterval(fallbackPollRef.current);
+        fallbackPollRef.current = null;
+      }
+    };
+  }, [selectedSport, onlyLive, handleIncomingData, manualFetch]);
+
+  // Page Visibility API: sync immediately when tab becomes visible again
   useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(() => {
-      fetchLiveMatches(true);
-    }, 25000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, fetchLiveMatches]);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        manualFetch(false);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [manualFetch]);
 
-  // Client-side search filtering
+  // Filter matches by search query
   const filteredMatches = useMemo(() => {
     if (!data?.matches) return [];
     let list = data.matches;
@@ -121,16 +280,36 @@ export default function LiveMatchesSection({
       {/* Top Header Bar */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800 pb-6">
         <div className="space-y-2">
-          <div className="flex items-center gap-2.5">
-            <span className="relative flex h-3.5 w-3.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Live Status Badge */}
+            <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
             </span>
             <span className="text-xs font-black uppercase tracking-wider text-red-500 bg-red-500/10 px-2.5 py-0.5 rounded-full border border-red-500/30">
               Live Scores & Streaming
             </span>
+
+            {/* Connection Indicator */}
+            {connectionStatus === 'connected' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Socket: Real-Time Stream (Live)
+              </span>
+            ) : connectionStatus === 'reconnecting' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-bold">
+                <Activity className="w-3 h-3 animate-spin" />
+                Reconnecting Stream...
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[11px] font-bold">
+                <Wifi className="w-3 h-3" />
+                Auto-Sync Mode (Active)
+              </span>
+            )}
+
             {data && (
-              <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+              <span className="text-xs font-semibold text-slate-300 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700">
                 {data.liveNowCount} In-Play Now
               </span>
             )}
@@ -142,38 +321,53 @@ export default function LiveMatchesSection({
           <p className="text-sm text-slate-400 max-w-2xl leading-relaxed">{subtitle}</p>
         </div>
 
-        {/* Action Controls: Refresh, Auto-refresh toggle */}
+        {/* Action Controls: Audio Chime Toggle & Manual Refresh */}
         <div className="flex flex-wrap items-center gap-2.5 self-start md:self-end">
+          {/* Sound Toggle */}
           <button
-            onClick={() => setAutoRefresh(!autoRefresh)}
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) playScoreChime();
+            }}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1.5 ${
-              autoRefresh
+              soundEnabled
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
             }`}
-            title="Toggle 25s auto-refresh"
+            title="Toggle audio alerts on score updates"
           >
-            <Radio className={`w-3.5 h-3.5 ${autoRefresh ? 'animate-pulse text-emerald-400' : ''}`} />
-            Auto-Refresh: {autoRefresh ? 'ON' : 'OFF'}
+            {soundEnabled ? (
+              <>
+                <Volume2 className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <span>Alerts: ON</span>
+              </>
+            ) : (
+              <>
+                <VolumeX className="w-3.5 h-3.5 text-slate-500" />
+                <span>Alerts: Muted</span>
+              </>
+            )}
           </button>
 
+          {/* Manual Refresh */}
           <button
-            onClick={() => fetchLiveMatches(true)}
+            onClick={() => manualFetch(true)}
             disabled={isRefreshing}
             className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50"
-            title="Refresh latest scores"
+            title="Force instant sync"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
-            <span>{isRefreshing ? 'Updating...' : 'Refresh'}</span>
+            <span>{isRefreshing ? 'Syncing...' : 'Sync Now'}</span>
           </button>
 
           <div className="text-[11px] text-slate-500 hidden sm:block">
-            Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </div>
         </div>
       </div>
 
-      {/* Sport Navigation Tabs & Filters Bar */}
+      {/* Sport Navigation Tabs & Filter Bar */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
         {/* Sport Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-thin scrollbar-thumb-slate-800">
@@ -281,196 +475,213 @@ export default function LiveMatchesSection({
         </div>
       ) : filteredMatches.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredMatches.map((match) => (
-            <div
-              key={match.id}
-              className={`bg-slate-900/90 border rounded-2xl p-5 transition flex flex-col justify-between shadow-xl relative overflow-hidden group hover:border-slate-700 ${
-                match.isLive
-                  ? 'border-red-500/30 hover:border-red-500/60 shadow-red-950/20'
-                  : 'border-slate-800 hover:border-slate-700'
-              }`}
-            >
-              {/* Subtle Ambient Glow for Live Matches */}
-              {match.isLive && (
-                <div className="absolute top-0 right-0 w-36 h-36 bg-red-500/5 blur-2xl rounded-full pointer-events-none -mr-10 -mt-10" />
-              )}
+          {filteredMatches.map((match) => {
+            const isJustUpdated = recentlyUpdatedIds.has(match.id);
 
-              {/* Card Header: Tournament & Live Badge */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-base" title={match.sportLabel}>
-                    {match.sportEmoji}
-                  </span>
-                  <span className="text-xs font-bold text-slate-300 truncate" title={match.tournament}>
-                    {match.tournament}
-                  </span>
-                </div>
-
-                {/* Status Indicator */}
-                {match.isLive ? (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black tracking-wide shrink-0">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                    <span>LIVE</span>
-                    {match.clock && <span className="text-white ml-0.5">• {match.clock}</span>}
-                  </div>
-                ) : match.state === 'post' ? (
-                  <div className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[11px] font-bold shrink-0">
-                    Final
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md shrink-0">
-                    <Clock className="w-3 h-3 text-slate-500" />
-                    <span>{match.statusDetail || 'Upcoming'}</span>
+            return (
+              <div
+                key={match.id}
+                className={`bg-slate-900/90 border rounded-2xl p-5 transition-all duration-300 flex flex-col justify-between shadow-xl relative overflow-hidden group ${
+                  isJustUpdated
+                    ? 'ring-2 ring-emerald-400 border-emerald-500/80 shadow-emerald-500/20 scale-[1.01]'
+                    : match.isLive
+                    ? 'border-red-500/30 hover:border-red-500/60 shadow-red-950/20'
+                    : 'border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                {/* Score Flash Banner */}
+                {isJustUpdated && (
+                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-[10px] font-black uppercase text-center py-0.5 tracking-wider animate-pulse z-20">
+                    ⚡ Score Just Updated (Real-Time)
                   </div>
                 )}
-              </div>
 
-              {/* Match Teams & Present Scores */}
-              <div className="py-4 space-y-3">
-                {/* Home / Team 1 Row */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative w-8 h-8 rounded-full bg-slate-800/90 p-1 flex items-center justify-center border border-slate-700/50 shrink-0">
-                      {match.homeTeam.logo ? (
-                        <img
-                          src={match.homeTeam.logo}
-                          alt={match.homeTeam.name}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <span className="text-xs font-bold text-slate-400">
-                          {match.homeTeam.shortName || match.homeTeam.name.slice(0, 3)}
-                        </span>
-                      )}
+                {/* Subtle Ambient Glow for Live Matches */}
+                {match.isLive && (
+                  <div className="absolute top-0 right-0 w-36 h-36 bg-red-500/5 blur-2xl rounded-full pointer-events-none -mr-10 -mt-10" />
+                )}
+
+                {/* Card Header: Tournament & Live Badge */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3 mt-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-base" title={match.sportLabel}>
+                      {match.sportEmoji}
+                    </span>
+                    <span className="text-xs font-bold text-slate-300 truncate" title={match.tournament}>
+                      {match.tournament}
+                    </span>
+                  </div>
+
+                  {/* Status Indicator */}
+                  {match.isLive ? (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] font-black tracking-wide shrink-0">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                      <span>LIVE</span>
+                      {match.clock && <span className="text-white ml-0.5">• {match.clock}</span>}
                     </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-sm text-white truncate">
-                          {match.homeTeam.name}
-                        </span>
-                        {match.homeTeam.isBatting && (
-                          <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0"
-                            title="Currently batting"
-                          >
-                            🏏 Batting
+                  ) : match.state === 'post' ? (
+                    <div className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[11px] font-bold shrink-0">
+                      Final
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md shrink-0">
+                      <Clock className="w-3 h-3 text-slate-500" />
+                      <span>{match.statusDetail || 'Upcoming'}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Match Teams & Present Scores */}
+                <div className="py-4 space-y-3">
+                  {/* Home / Team 1 Row */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative w-8 h-8 rounded-full bg-slate-800/90 p-1 flex items-center justify-center border border-slate-700/50 shrink-0">
+                        {match.homeTeam.logo ? (
+                          <img
+                            src={match.homeTeam.logo}
+                            alt={match.homeTeam.name}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-slate-400">
+                            {match.homeTeam.shortName || match.homeTeam.name.slice(0, 3)}
                           </span>
                         )}
                       </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-extrabold text-sm text-white truncate">
+                            {match.homeTeam.name}
+                          </span>
+                          {match.homeTeam.isBatting && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0"
+                              title="Currently batting"
+                            >
+                              🏏 Batting
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score */}
+                    <div className="text-right shrink-0">
+                      <span
+                        className={`text-base font-black tracking-tight transition-colors ${
+                          isJustUpdated
+                            ? 'text-emerald-400'
+                            : match.homeTeam.score && match.homeTeam.score !== '0' && match.homeTeam.score !== 'Yet to bat'
+                            ? 'text-white'
+                            : 'text-slate-500 text-xs font-semibold'
+                        }`}
+                      >
+                        {match.homeTeam.score || '—'}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Score */}
-                  <div className="text-right shrink-0">
-                    <span
-                      className={`text-base font-black tracking-tight ${
-                        match.homeTeam.score && match.homeTeam.score !== '0' && match.homeTeam.score !== 'Yet to bat'
-                          ? 'text-white'
-                          : 'text-slate-500 text-xs font-semibold'
-                      }`}
-                    >
-                      {match.homeTeam.score || '—'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Away / Team 2 Row */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative w-8 h-8 rounded-full bg-slate-800/90 p-1 flex items-center justify-center border border-slate-700/50 shrink-0">
-                      {match.awayTeam.logo ? (
-                        <img
-                          src={match.awayTeam.logo}
-                          alt={match.awayTeam.name}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <span className="text-xs font-bold text-slate-400">
-                          {match.awayTeam.shortName || match.awayTeam.name.slice(0, 3)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-sm text-white truncate">
-                          {match.awayTeam.name}
-                        </span>
-                        {match.awayTeam.isBatting && (
-                          <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0"
-                            title="Currently batting"
-                          >
-                            🏏 Batting
+                  {/* Away / Team 2 Row */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative w-8 h-8 rounded-full bg-slate-800/90 p-1 flex items-center justify-center border border-slate-700/50 shrink-0">
+                        {match.awayTeam.logo ? (
+                          <img
+                            src={match.awayTeam.logo}
+                            alt={match.awayTeam.name}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-slate-400">
+                            {match.awayTeam.shortName || match.awayTeam.name.slice(0, 3)}
                           </span>
                         )}
                       </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-extrabold text-sm text-white truncate">
+                            {match.awayTeam.name}
+                          </span>
+                          {match.awayTeam.isBatting && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0"
+                              title="Currently batting"
+                            >
+                              🏏 Batting
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score */}
+                    <div className="text-right shrink-0">
+                      <span
+                        className={`text-base font-black tracking-tight transition-colors ${
+                          isJustUpdated
+                            ? 'text-emerald-400'
+                            : match.awayTeam.score && match.awayTeam.score !== '0' && match.awayTeam.score !== 'Yet to bat'
+                            ? 'text-white'
+                            : 'text-slate-500 text-xs font-semibold'
+                        }`}
+                      >
+                        {match.awayTeam.score || '—'}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Score */}
-                  <div className="text-right shrink-0">
-                    <span
-                      className={`text-base font-black tracking-tight ${
-                        match.awayTeam.score && match.awayTeam.score !== '0' && match.awayTeam.score !== 'Yet to bat'
-                          ? 'text-white'
-                          : 'text-slate-500 text-xs font-semibold'
-                      }`}
+                  {/* In-play match situation / commentary line */}
+                  {match.summary && (
+                    <div className="pt-2 border-t border-slate-800/50 text-[11px] font-semibold text-emerald-400/90 flex items-center gap-1.5 leading-snug">
+                      <Volume2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span className="truncate">{match.summary}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Card Footer: Broadcaster & Action CTA */}
+                <div className="pt-3 border-t border-slate-800/80 space-y-3">
+                  {/* Official Broadcaster Channels */}
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <div className="flex items-center gap-1 truncate">
+                      <Tv className="w-3 h-3 text-slate-500 shrink-0" />
+                      <span className="truncate font-medium">
+                        US: <strong className="text-slate-300 font-semibold">{match.broadcasters.us.split('/')[0]}</strong> • UK: <strong className="text-slate-300 font-semibold">{match.broadcasters.uk.split('/')[0]}</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stream / Match Center Action Links */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link
+                      href={match.streamUrl}
+                      target="_blank"
+                      rel="sponsored nofollow"
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs shadow-md shadow-red-950/50 transition group-hover:scale-[1.02]"
                     >
-                      {match.awayTeam.score || '—'}
-                    </span>
+                      <Play className="w-3 h-3 fill-current" />
+                      Watch Stream
+                    </Link>
+
+                    <Link
+                      href={`/match/${match.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                      className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs transition"
+                    >
+                      <span>Match Guide</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
-                </div>
-
-                {/* In-play match situation / commentary line */}
-                {match.summary && (
-                  <div className="pt-2 border-t border-slate-800/50 text-[11px] font-semibold text-emerald-400/90 flex items-center gap-1.5 leading-snug">
-                    <Volume2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                    <span className="truncate">{match.summary}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Card Footer: Broadcaster & Action CTA */}
-              <div className="pt-3 border-t border-slate-800/80 space-y-3">
-                {/* Official Broadcaster Channels */}
-                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                  <div className="flex items-center gap-1 truncate">
-                    <Tv className="w-3 h-3 text-slate-500 shrink-0" />
-                    <span className="truncate font-medium">
-                      US: <strong className="text-slate-300 font-semibold">{match.broadcasters.us.split('/')[0]}</strong> • UK: <strong className="text-slate-300 font-semibold">{match.broadcasters.uk.split('/')[0]}</strong>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Stream / Match Center Action Links */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <Link
-                    href={match.streamUrl}
-                    target="_blank"
-                    rel="sponsored nofollow"
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs shadow-md shadow-red-950/50 transition group-hover:scale-[1.02]"
-                  >
-                    <Play className="w-3 h-3 fill-current" />
-                    Watch Stream
-                  </Link>
-
-                  <Link
-                    href={`/match/${match.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                    className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs transition"
-                  >
-                    <span>Match Guide</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         /* Empty State */
