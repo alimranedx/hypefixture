@@ -4,8 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { HYPE_MATCH_POOL } from '@/lib/gemini';
 import MatchCard from '@/components/MatchCard';
 import StreamCtaCard from '@/components/StreamCtaCard';
+import LiveMatchesSection from '@/components/LiveMatchesSection';
 import JsonLd from '@/components/JsonLd';
-import { Flame, Tv, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { Flame, Tv, ArrowRight, ShieldCheck, Zap, Radio } from 'lucide-react';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -55,16 +56,35 @@ export default async function HomePage() {
           {/* Quick Sport Selector Pills */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4">
             <Link
+              href="/live"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 text-white text-sm font-black transition flex items-center gap-2 shadow-lg shadow-red-900/40 hover:scale-105"
+            >
+              <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+              🔴 Live Matches Now
+            </Link>
+            <Link
               href="/football"
               className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
             >
               ⚽ Premier League & UCL
             </Link>
             <Link
+              href="/cricket"
+              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
+            >
+              🏏 Cricket Live
+            </Link>
+            <Link
               href="/nfl"
               className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-blue-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
             >
               🏈 NFL Game Day
+            </Link>
+            <Link
+              href="/rugby"
+              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-lg"
+            >
+              🏉 Rugby Live
             </Link>
             <Link
               href="/nba"
@@ -81,6 +101,13 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Live Match Center Section */}
+      <LiveMatchesSection
+        initialSport="all"
+        title="Live Matches In-Play Now"
+        subtitle="Watch Football, Cricket, NFL, and Rugby games currently running with real-time present scores, live situation updates, and stream links."
+      />
 
       {/* Featured High-Hype Matches Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

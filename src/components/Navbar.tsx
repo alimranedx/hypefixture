@@ -25,11 +25,14 @@ export default function Navbar() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   const sportsNav = [
+    { name: 'Live Matches', href: '/live', isLive: true },
     { name: '🔥 All Fixtures', href: '/' },
-    { name: '⚽ Football / Soccer', href: '/football' },
-    { name: '🏀 NBA', href: '/nba' },
+    { name: '⚽ Football', href: '/football' },
+    { name: '🏏 Cricket', href: '/cricket' },
     { name: '🏈 NFL', href: '/nfl' },
-    { name: '🥊 UFC / Boxing', href: '/ufc' },
+    { name: '🏉 Rugby', href: '/rugby' },
+    { name: '🏀 NBA', href: '/nba' },
+    { name: '🥊 UFC', href: '/ufc' },
   ];
 
   const userRole = (session?.user as any)?.role;
@@ -70,19 +73,29 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Sports Links */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {sportsNav.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3.5 py-1.5 rounded-lg text-sm font-semibold transition ${
-                    isActive
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                    item.isLive
+                      ? isActive
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/50 shadow-sm shadow-red-500/20'
+                        : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30'
+                      : isActive
                       ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                       : 'text-slate-300 hover:text-white hover:bg-slate-900'
                   }`}
                 >
+                  {item.isLive && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                  )}
                   {item.name}
                 </Link>
               );
@@ -203,9 +216,19 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-lg text-base font-semibold text-slate-300 hover:bg-slate-900 hover:text-white"
+                className={`flex items-center justify-between px-3 py-2 rounded-lg text-base font-semibold transition ${
+                  item.isLive
+                    ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                }`}
               >
-                {item.name}
+                <span>{item.name}</span>
+                {item.isLive && (
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-black">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    LIVE NOW
+                  </span>
+                )}
               </Link>
             ))}
 

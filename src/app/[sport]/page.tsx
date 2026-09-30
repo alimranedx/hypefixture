@@ -5,8 +5,10 @@ import { prisma } from '@/lib/prisma';
 import { HYPE_MATCH_POOL } from '@/lib/gemini';
 import MatchCard from '@/components/MatchCard';
 import StreamCtaCard from '@/components/StreamCtaCard';
+import LiveMatchesSection from '@/components/LiveMatchesSection';
 import Link from 'next/link';
 import { ArrowRight, Trophy } from 'lucide-react';
+import { SportCategory } from '@/lib/liveScores';
 
 interface SportPageProps {
   params: Promise<{ sport: string }>;
@@ -18,15 +20,25 @@ const VALID_SPORTS: Record<string, { title: string; desc: string; icon: string }
     desc: 'Watch Premier League, UEFA Champions League, and La Liga matches. Official TV channels, kickoff times, and streaming access.',
     icon: '⚽',
   },
-  nba: {
-    title: 'NBA Live Games & Broadcast Channels',
-    desc: 'Never miss an NBA matchup. Find where to stream NBA games today on ESPN, TNT, and NBA League Pass.',
-    icon: '🏀',
+  cricket: {
+    title: 'Cricket Live Scores, Broadcasts & Match Streams',
+    desc: 'Live scores, over-by-over updates, and official TV channels for international cricket tours, ICC tournaments, and domestic T20 leagues.',
+    icon: '🏏',
   },
   nfl: {
     title: 'NFL Live Streams & Sunday Broadcast Schedule',
     desc: 'Live TV channels and streams for Thursday Night, Sunday Night, and Monday Night Football.',
     icon: '🏈',
+  },
+  rugby: {
+    title: 'Rugby Union & League Live Streams and Fixtures',
+    desc: 'Where to watch Six Nations, The Rugby Championship, Premiership, and Super Rugby live.',
+    icon: '🏉',
+  },
+  nba: {
+    title: 'NBA Live Games & Broadcast Channels',
+    desc: 'Never miss an NBA matchup. Find where to stream NBA games today on ESPN, TNT, and NBA League Pass.',
+    icon: '🏀',
   },
   ufc: {
     title: 'UFC PPV & Fight Night Live Streaming Guides',
@@ -83,6 +95,15 @@ export default async function SportPage({ params }: SportPageProps) {
           {config.desc}
         </p>
       </div>
+
+      {/* Live In-Play Match Scorecards */}
+      {['football', 'cricket', 'nfl', 'rugby', 'nba'].includes(sportKey) && (
+        <LiveMatchesSection
+          initialSport={sportKey as SportCategory}
+          title={`Live ${config.icon} ${sportKey.toUpperCase()} Scores`}
+          subtitle={`Real-time scores and live streaming channels for today's running ${sportKey} matches.`}
+        />
+      )}
 
       {/* Sport Marquee Matches */}
       <section className="space-y-6">
