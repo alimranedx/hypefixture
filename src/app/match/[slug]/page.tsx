@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck, Ticket, HelpCircle } from 'lucide-react';
-import { getTicketEventBySlug, getAllTicketEvents } from '@/lib/tickets';
+import { getDynamicTicketEventBySlug, getDynamicTicketEvents } from '@/lib/tickets';
 import TicketHeroCard from '@/components/TicketHeroCard';
 import TicketComparisonEngine from '@/components/TicketComparisonEngine';
 import StadiumSeatingGuide from '@/components/StadiumSeatingGuide';
@@ -15,7 +15,7 @@ interface MatchPageProps {
 }
 
 export async function generateStaticParams() {
-  const events = getAllTicketEvents();
+  const events = await getDynamicTicketEvents();
   return events.map((event) => ({
     slug: event.slug,
   }));
@@ -23,7 +23,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: MatchPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const event = getTicketEventBySlug(slug);
+  const event = await getDynamicTicketEventBySlug(slug);
 
   if (!event) {
     return { title: 'Matchday Ticket Guide Not Found | HypeFixture' };
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: MatchPageProps): Promise<Meta
 
   return {
     title: `${event.title} - Compare Prices from ${currencySymbol}${event.minPrice} | HypeFixture`,
-    description: `Compare verified ${event.title} from SeatGeek, StubHub, Viagogo, and TickPick. View ${event.venueName} seating chart, category pricing, and 100% guaranteed tickets from ${currencySymbol}${event.minPrice}.`,
+    description: `Compare verified ${event.title} from SeatGeek, StubHub, and Viagogo. View ${event.venueName} seating chart, category pricing, and 100% guaranteed tickets from ${currencySymbol}${event.minPrice}.`,
     keywords: [
       `${event.title}`,
       `${event.homeTeam} vs ${event.awayTeam} tickets`,
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: MatchPageProps): Promise<Meta
 
 export default async function MatchPage({ params }: MatchPageProps) {
   const { slug } = await params;
-  const event = getTicketEventBySlug(slug);
+  const event = await getDynamicTicketEventBySlug(slug);
 
   if (!event) {
     notFound();

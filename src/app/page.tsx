@@ -6,21 +6,22 @@ import MatchCard from '@/components/MatchCard';
 import LiveMatchesSection from '@/components/LiveMatchesSection';
 import JsonLd from '@/components/JsonLd';
 import { Flame, Tv, ArrowRight, ShieldCheck, Zap, Radio, Ticket, Calendar, MapPin } from 'lucide-react';
-import { TICKET_EVENTS } from '@/lib/tickets';
+import { getDynamicTicketEvents } from '@/lib/tickets';
 
 import { getActiveSports } from '@/lib/sports';
 
 export const revalidate = 60; // Revalidate every minute
 
 export default async function HomePage() {
-  // Fetch dynamic active sports and latest published posts concurrently
-  const [activeSports, latestPosts] = await Promise.all([
+  // Fetch dynamic tickets, active sports and latest published posts concurrently
+  const [activeSports, latestPosts, ticketEvents] = await Promise.all([
     getActiveSports(),
     prisma.post.findMany({
       where: { status: 'PUBLISHED' },
       orderBy: { createdAt: 'desc' },
       take: 6,
     }),
+    getDynamicTicketEvents(),
   ]);
 
   const websiteSchema = {
@@ -123,7 +124,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {TICKET_EVENTS.slice(0, 3).map((event) => {
+          {ticketEvents.slice(0, 6).map((event) => {
             const currencySymbol = event.currency === 'GBP' ? '£' : event.currency === 'EUR' ? '€' : '$';
             return (
               <div
@@ -302,30 +303,26 @@ export default async function HomePage() {
 
       {/* SEO FAQ Section */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <h2 className="text-2xl font-bold text-white text-center">Frequently Asked Questions</h2>
+        <h2 className="text-2xl font-bold text-white text-center">Frequently Asked Questions for Ticket Buyers</h2>
         <div className="space-y-4">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2">
-            <h3 className="font-bold text-white text-base">How do I watch live sports streams legally?</h3>
+            <h3 className="font-bold text-white text-base">How do I buy sold-out Premier League &amp; European Football tickets safely?</h3>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Live sports are broadcast legally through authorized networks such as Peacock, Sky Sports, ESPN+, Fubo,
-              and TNT Sports. Our broadcast directory lists verified legal channels for your country so you can stream
-              high-definition matches without pirated link risks.
+              Official club box offices typically sell out tickets to paying club members within minutes. HypeFixture compares prices across verified secondary exchanges like SeatGeek, StubHub, and Viagogo that provide 100% money-back buyer guarantees, ensuring you receive authentic barcodes before kickoff.
             </p>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2">
-            <h3 className="font-bold text-white text-base">What if a match is blacked out in my region?</h3>
+            <h3 className="font-bold text-white text-base">Can foreign tourists and overseas fans attend matches without a membership?</h3>
             <p className="text-sm text-slate-300 leading-relaxed">
-              If you are traveling abroad or restricted by local TV blackouts, using a verified sports VPN allows you
-              to securely connect to your official home broadcaster account.
+              Yes! International travelers visiting the UK or Europe can purchase verified resale match tickets and official club hospitality passes directly without holding seasonal club memberships.
             </p>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2">
-            <h3 className="font-bold text-white text-base">How often are match schedules updated?</h3>
+            <h3 className="font-bold text-white text-base">When will my mobile matchday ticket arrive?</h3>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Our AI automation checks schedules and odds continuously throughout the day to ensure kickoff times,
-              confirmed channels, and injury news are completely up to date.
+              Most European clubs issue digital NFC / Apple Wallet passes or PDF e-tickets 24 to 48 hours before match kickoff. All partner marketplaces backed on HypeFixture provide instant or expedited digital delivery with 100% buyer protection.
             </p>
           </div>
         </div>

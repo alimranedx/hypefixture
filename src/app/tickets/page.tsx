@@ -17,12 +17,51 @@ import {
 import { TICKET_EVENTS } from '@/lib/tickets';
 
 export default function TicketsPage() {
+  const [eventsList, setEventsList] = useState(TICKET_EVENTS);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<string>('all');
-  const [maxPrice, setMaxPrice] = useState<number>(500);
+  const [maxPrice, setMaxPrice] = useState<number>(850);
+
+  React.useEffect(() => {
+    fetch('/api/tickets')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.tickets) && data.tickets.length > 0) {
+          // Normalize if DB fixture
+          const mapped = data.tickets.map((t: any) => {
+            if (t.offers) return t;
+            return {
+              ...t,
+              offers: [
+                {
+                  id: `off-sg-${t.slug}`,
+                  vendorName: 'SeatGeek',
+                  vendorSlug: 'seatgeek',
+                  price: t.seatgeekPrice || t.minPrice + 15,
+                  originalCurrency: t.currency,
+                  isBestValue: true,
+                  affiliateUrl: t.seatgeekUrl || `https://seatgeek.com/search?search=${encodeURIComponent(t.title)}&ref=hypefixture`,
+                },
+                {
+                  id: `off-sh-${t.slug}`,
+                  vendorName: 'StubHub',
+                  vendorSlug: 'stubhub',
+                  price: t.stubhubPrice || t.minPrice,
+                  originalCurrency: t.currency,
+                  isBestValue: false,
+                  affiliateUrl: t.stubhubUrl || `https://stubhub.com/search?q=${encodeURIComponent(t.title)}&ref=hypefixture`,
+                },
+              ],
+            };
+          });
+          setEventsList(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const filteredEvents = useMemo(() => {
-    return TICKET_EVENTS.filter((event) => {
+    return eventsList.filter((event) => {
       // Sport filter
       if (selectedSport !== 'all' && event.sport.toLowerCase() !== selectedSport.toLowerCase()) {
         return false;
@@ -39,7 +78,7 @@ export default function TicketsPage() {
       }
       return true;
     });
-  }, [searchQuery, selectedSport, maxPrice]);
+  }, [eventsList, searchQuery, selectedSport, maxPrice]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">

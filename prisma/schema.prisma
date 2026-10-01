@@ -173,3 +173,40 @@ model SportCategory {
 
   @@index([isActive])
 }
+
+model TicketFixture {
+  id               String   @id @default(cuid())
+  slug             String   @unique @db.VarChar(191)
+  title            String   @db.VarChar(255)
+  homeTeam         String   @db.VarChar(100)
+  awayTeam         String   @db.VarChar(100)
+  sport            String   @default("football") @db.VarChar(50)
+  tournament       String   @db.VarChar(100)
+  matchDate        String   @db.VarChar(100)
+  kickoffUtc       String?  @db.VarChar(100)
+  venueName        String   @db.VarChar(150)
+  city             String   @db.VarChar(100)
+  country          String   @db.VarChar(100)
+  venueCapacity    Int      @default(60000)
+  stadiumAddress   String   @db.VarChar(255)
+  minPrice         Int      @default(89)
+  maxPrice         Int      @default(500)
+  currency         String   @default("GBP") @db.VarChar(10)
+  availableTickets Int      @default(500)
+  demandStatus     String   @default("HIGH_DEMAND") @db.VarChar(50)
+  featuredImage    String?  @db.VarChar(500)
+  seatgeekPrice    Int?     @default(135)
+  seatgeekUrl      String?  @db.VarChar(500)
+  stubhubPrice     Int?     @default(120)
+  stubhubUrl       String?  @db.VarChar(500)
+  viagogoPrice     Int?     @default(125)
+  viagogoUrl       String?  @db.VarChar(500)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([sport])
+  @@index([tournament])
+  @@index([isActive])
+}
+

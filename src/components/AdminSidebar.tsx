@@ -25,6 +25,7 @@ import {
   Radio,
   Share2,
   Trophy,
+  Ticket,
 } from 'lucide-react';
 import { useAdmin } from '@/context/AdminContext';
 
@@ -93,6 +94,14 @@ export default function AdminSidebar(props: AdminSidebarProps) {
       href: '/admin/dashboard',
       icon: LayoutDashboard,
       desc: 'System health & vital stats',
+    },
+    {
+      id: 'tickets',
+      name: 'Match Tickets Hub',
+      href: '/admin/tickets',
+      icon: Ticket,
+      desc: 'European fixtures & live prices',
+      highlight: true,
     },
     {
       id: 'ai-studio',

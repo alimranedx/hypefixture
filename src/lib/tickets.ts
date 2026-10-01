@@ -1,3 +1,5 @@
+import { prisma } from './prisma';
+
 export interface TicketVendorOffer {
   id: string;
   vendorName: 'SeatGeek' | 'StubHub' | 'Viagogo' | 'TickPick' | 'Official Box Office';
@@ -684,6 +686,166 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
   },
 ];
 
+export function mapDbFixtureToEvent(db: any): TicketMatchEvent {
+  const sym = db.currency === 'GBP' ? '£' : db.currency === 'EUR' ? '€' : '$';
+  const sgPrice = db.seatgeekPrice || db.minPrice + 15;
+  const shPrice = db.stubhubPrice || db.minPrice;
+  const vgPrice = db.viagogoPrice || db.minPrice + 10;
+
+  const offers: TicketVendorOffer[] = [
+    {
+      id: `off-sg-${db.slug}`,
+      vendorName: 'SeatGeek',
+      vendorSlug: 'seatgeek',
+      seatingTier: 'Category 1 Longside Lower',
+      tierCategory: 'CAT_1',
+      price: sgPrice,
+      originalCurrency: db.currency,
+      rating: 4.9,
+      reviewCount: 14200,
+      guaranteeBadge: '100% Buyer Guarantee',
+      instantDownload: true,
+      isBestValue: sgPrice <= shPrice,
+      affiliateUrl: db.seatgeekUrl || `https://seatgeek.com/search?search=${encodeURIComponent(db.title)}&ref=hypefixture`,
+    },
+    {
+      id: `off-sh-${db.slug}`,
+      vendorName: 'StubHub',
+      vendorSlug: 'stubhub',
+      seatingTier: 'Behind Goal Lower Stand',
+      tierCategory: 'CAT_3',
+      price: shPrice,
+      originalCurrency: db.currency,
+      rating: 4.8,
+      reviewCount: 31000,
+      guaranteeBadge: 'StubHub FanProtect™ Guarantee',
+      instantDownload: true,
+      isBestValue: shPrice < sgPrice,
+      affiliateUrl: db.stubhubUrl || `https://stubhub.com/search?q=${encodeURIComponent(db.title)}&ref=hypefixture`,
+    },
+    {
+      id: `off-vg-${db.slug}`,
+      vendorName: 'Viagogo',
+      vendorSlug: 'viagogo',
+      seatingTier: 'Upper Tier Central Longside',
+      tierCategory: 'CAT_2',
+      price: vgPrice,
+      originalCurrency: db.currency,
+      rating: 4.7,
+      reviewCount: 19800,
+      guaranteeBadge: 'Verified Resale Ticket',
+      instantDownload: true,
+      isBestValue: false,
+      affiliateUrl: db.viagogoUrl || `https://viagogo.com/search?q=${encodeURIComponent(db.title)}&ref=hypefixture`,
+    },
+  ];
+
+  return {
+    id: db.id,
+    slug: db.slug,
+    title: db.title,
+    homeTeam: db.homeTeam,
+    awayTeam: db.awayTeam,
+    sport: db.sport,
+    tournament: db.tournament,
+    matchDate: db.matchDate,
+    kickoffUtc: db.kickoffUtc || new Date().toISOString(),
+    venueName: db.venueName,
+    city: db.city,
+    country: db.country,
+    venueCapacity: db.venueCapacity,
+    stadiumAddress: db.stadiumAddress,
+    minPrice: db.minPrice,
+    maxPrice: db.maxPrice,
+    currency: db.currency,
+    availableTickets: db.availableTickets,
+    demandStatus: db.demandStatus as any,
+    featuredImage: db.featuredImage || 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
+    broadcasters: {
+      us: 'NBC / Peacock / ESPN+',
+      uk: 'Sky Sports / TNT Sports',
+      ca: 'Fubo Sports Canada',
+      au: 'Optus Sport',
+    },
+    offers,
+    seatingTiers: [
+      {
+        id: `st-cat1-${db.slug}`,
+        name: 'Category 1: Longside Lower Tier',
+        description: 'Prime sideline view between the penalty boxes.',
+        priceFrom: sgPrice,
+        viewQuality: 'Prime Sideline',
+        recommendedFor: 'Best overall matchday sightlines',
+      },
+      {
+        id: `st-cat2-${db.slug}`,
+        name: 'Category 2: Upper Tier Panoramic',
+        description: 'Elevated view across the entire pitch with tactical perspective.',
+        priceFrom: vgPrice,
+        viewQuality: 'Panoramic',
+        recommendedFor: 'Tactical fans & great value',
+      },
+      {
+        id: `st-cat3-${db.slug}`,
+        name: 'Category 3: Behind Goal Atmosphere',
+        description: 'Directly behind the goal with the most vocal home ultras.',
+        priceFrom: shPrice,
+        viewQuality: 'Intense Atmosphere',
+        recommendedFor: 'Passion & roaring matchday chants',
+      },
+    ],
+    faqs: [
+      {
+        question: `How do I receive my ${db.title}?`,
+        answer: 'Tickets are securely transferred digitally to your mobile wallet (Apple Wallet / Google Pay) or PDF e-ticket within 24 to 48 hours before match kickoff.',
+      },
+      {
+        question: 'Are seats seated together?',
+        answer: 'Yes! When purchasing 2 or more tickets in a single checkout, vendors guarantee seats directly side-by-side unless explicitly stated otherwise.',
+      },
+    ],
+  };
+}
+
+export async function getDynamicTicketEvents(): Promise<TicketMatchEvent[]> {
+  try {
+    const dbFixtures = await prisma.ticketFixture.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (dbFixtures.length > 0) {
+      return dbFixtures.map(mapDbFixtureToEvent);
+    }
+  } catch (err) {
+    console.error('Error fetching dynamic ticket fixtures from DB, using fallback:', err);
+  }
+  return TICKET_EVENTS;
+}
+
+export async function getDynamicTicketEventBySlug(slug: string): Promise<TicketMatchEvent | undefined> {
+  const normalized = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  try {
+    const dbFixture = await prisma.ticketFixture.findFirst({
+      where: {
+        OR: [
+          { slug: normalized },
+          { slug: { contains: normalized } },
+        ],
+        isActive: true,
+      },
+    });
+
+    if (dbFixture) {
+      return mapDbFixtureToEvent(dbFixture);
+    }
+  } catch (err) {
+    console.error('Error fetching ticket fixture by slug from DB:', err);
+  }
+
+  return getTicketEventBySlug(normalized);
+}
+
 export function getAllTicketEvents(): TicketMatchEvent[] {
   return TICKET_EVENTS;
 }
@@ -723,3 +885,4 @@ export function searchTicketEvents(params: {
     return true;
   });
 }
+
