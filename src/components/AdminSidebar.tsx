@@ -207,7 +207,7 @@ export default function AdminSidebar(props: AdminSidebarProps) {
           <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
             <Image
               src="/logo-icon.png"
-              alt="Hype Fixture Logo"
+              alt="TicketFixture Logo"
               width={40}
               height={40}
               className="w-full h-full object-cover"
@@ -216,12 +216,12 @@ export default function AdminSidebar(props: AdminSidebarProps) {
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-base font-black tracking-tight text-white">
-                HYPE<span className="text-emerald-400">FIXTURE</span>
+                TICKET<span className="text-emerald-400">FIXTURE</span>
               </span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
             <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase block -mt-0.5">
-              Senior Sports CMS
+              Tickets &amp; Sports CMS
             </span>
           </div>
         </Link>
@@ -361,7 +361,7 @@ export default function AdminSidebar(props: AdminSidebarProps) {
                 {currentUser?.name || 'Administrator'}
               </span>
               <span className="block text-[10px] text-slate-400 truncate">
-                {currentUser?.email || 'admin@hypefixture.com'}
+                {currentUser?.email || 'admin@ticketfixture.com'}
               </span>
             </div>
           </div>
@@ -410,14 +410,14 @@ export default function AdminSidebar(props: AdminSidebarProps) {
           <div className="relative w-8 h-8 rounded-lg overflow-hidden shadow-md shadow-emerald-500/10">
             <Image
               src="/logo-icon.png"
-              alt="Hype Fixture Logo"
+              alt="TicketFixture Logo"
               width={32}
               height={32}
               className="w-full h-full object-cover"
             />
           </div>
           <span className="font-black text-white text-sm">
-            HYPE<span className="text-emerald-400">FIXTURE</span> CMS
+            TICKET<span className="text-emerald-400">FIXTURE</span> CMS
           </span>
         </Link>
         <button

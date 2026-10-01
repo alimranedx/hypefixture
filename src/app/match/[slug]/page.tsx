@@ -26,13 +26,13 @@ export async function generateMetadata({ params }: MatchPageProps): Promise<Meta
   const event = await getDynamicTicketEventBySlug(slug);
 
   if (!event) {
-    return { title: 'Matchday Ticket Guide Not Found | HypeFixture' };
+    return { title: 'Matchday Ticket Guide Not Found | TicketFixture' };
   }
 
   const currencySymbol = event.currency === 'GBP' ? '£' : event.currency === 'EUR' ? '€' : '$';
 
   return {
-    title: `${event.title} - Compare Prices from ${currencySymbol}${event.minPrice} | HypeFixture`,
+    title: `${event.title} - Compare Prices from ${currencySymbol}${event.minPrice} | TicketFixture`,
     description: `Compare verified ${event.title} from SeatGeek, StubHub, and Viagogo. View ${event.venueName} seating chart, category pricing, and 100% guaranteed tickets from ${currencySymbol}${event.minPrice}.`,
     keywords: [
       `${event.title}`,
@@ -85,7 +85,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
       priceCurrency: event.currency,
       offerCount: String(event.availableTickets),
       availability: 'https://schema.org/InStock',
-      url: `https://hypefixture.com/match/${event.slug}`,
+      url: `https://ticketfixture.com/match/${event.slug}`,
       offers: event.offers.map((offer) => ({
         '@type': 'Offer',
         name: `${offer.vendorName} - ${offer.seatingTier}`,

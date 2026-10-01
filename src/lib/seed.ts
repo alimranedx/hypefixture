@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { generateDailyHypePosts, saveGeneratedPostsToDatabase } from './gemini';
 
 export async function seedDatabase() {
-  console.log('Seeding HypeFixture database...');
+  console.log('Seeding TicketFixture database...');
 
   // 1. Ensure system settings exist
   await prisma.systemSetting.upsert({
@@ -14,7 +14,7 @@ export async function seedDatabase() {
       postsPerDay: 5,
       autoPublish: true,
       activeSports: 'football,cricket',
-      affforceUrl: 'https://seatgeek.com/?ref=hypefixture',
+      affforceUrl: 'https://seatgeek.com/?ref=ticketfixture',
       vpnUrl: 'https://nordvpn.com',
       fuboUrl: 'https://www.fubo.tv',
     },
@@ -41,14 +41,14 @@ export async function seedDatabase() {
 
   // 3. Ensure Admin account exists
   await prisma.user.upsert({
-    where: { email: 'admin@hypefixture.com' },
+    where: { email: 'admin@ticketfixture.com' },
     update: {
       role: 'ADMIN',
       isApproved: true,
       password: hashedPassword,
     },
     create: {
-      email: 'admin@hypefixture.com',
+      email: 'admin@ticketfixture.com',
       name: 'Site Administrator',
       role: 'ADMIN',
       isApproved: true,
@@ -62,7 +62,7 @@ export async function seedDatabase() {
     {
       name: 'SeatGeek Official Partner',
       slug: 'seatgeek',
-      targetUrl: 'https://seatgeek.com/?ref=hypefixture',
+      targetUrl: 'https://seatgeek.com/?ref=ticketfixture',
       category: 'Verified Event Tickets',
       payout: '5% - 10% Commission',
       clicks: 210,
@@ -71,25 +71,25 @@ export async function seedDatabase() {
     {
       name: 'StubHub FanProtect Marketplace',
       slug: 'stubhub',
-      targetUrl: 'https://stubhub.com/?ref=hypefixture',
+      targetUrl: 'https://stubhub.com/?ref=ticketfixture',
       category: 'Secondary Resale',
-      payout: '4% - 9% Commission',
+      payout: '5% - 8% Commission',
       clicks: 184,
       conversions: 11,
     },
     {
       name: 'Viagogo Global Tickets',
       slug: 'viagogo',
-      targetUrl: 'https://viagogo.com/?ref=hypefixture',
+      targetUrl: 'https://viagogo.com/?ref=ticketfixture',
       category: 'International Sports',
-      payout: '7% - 10% Commission',
+      payout: '5% - 8% Commission',
       clicks: 125,
       conversions: 8,
     },
     {
       name: 'TickPick No-Fee Marketplace',
       slug: 'tickpick',
-      targetUrl: 'https://tickpick.com/?ref=hypefixture',
+      targetUrl: 'https://tickpick.com/?ref=ticketfixture',
       category: 'No-Fee Tickets',
       payout: '4% - 8% Commission',
       clicks: 98,

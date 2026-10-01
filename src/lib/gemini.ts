@@ -308,7 +308,7 @@ export async function callGeminiWithCascade(
   for (let i = 0; i < cascade.length; i++) {
     const model = cascade[i];
     try {
-      console.log(`[HypeFixture Gemini Engine] Attempting model [${i + 1}/${cascade.length}]: ${model}...`);
+      console.log(`[TicketFixture Gemini Engine] Attempting model [${i + 1}/${cascade.length}]: ${model}...`);
       const response = await ai.models.generateContent({
         model,
         contents: prompt,
@@ -318,9 +318,9 @@ export async function callGeminiWithCascade(
         attemptedModels.push({ model, success: true });
         const fallbackOccurred = i > 0;
         if (fallbackOccurred) {
-          console.log(`[HypeFixture Gemini Engine] ⚡ Auto-failover SUCCESS: Primary model congested; generated using fallback model "${model}"!`);
+          console.log(`[TicketFixture Gemini Engine] ⚡ Auto-failover SUCCESS: Primary model congested; generated using fallback model "${model}"!`);
         } else {
-          console.log(`[HypeFixture Gemini Engine] ⚡ Prompt SUCCESS using latest model "${model}"!`);
+          console.log(`[TicketFixture Gemini Engine] ⚡ Prompt SUCCESS using latest model "${model}"!`);
         }
 
         return {
@@ -333,7 +333,7 @@ export async function callGeminiWithCascade(
     } catch (err: any) {
       lastError = err;
       const errMsg = err?.message || String(err);
-      console.warn(`[HypeFixture Gemini Engine] ⚠️ Model "${model}" failed (${errMsg.slice(0, 110)}...). Cascading to next fallback model...`);
+      console.warn(`[TicketFixture Gemini Engine] ⚠️ Model "${model}" failed (${errMsg.slice(0, 110)}...). Cascading to next fallback model...`);
       attemptedModels.push({ model, error: errMsg });
       // Brief pause between cascade attempts
       await new Promise((r) => setTimeout(r, 600));
@@ -411,7 +411,7 @@ export async function generateDailyHypePosts(
     const existingTitlesList = existingPosts.slice(0, 15).map((p) => p.title).join(' | ');
 
     const prompt = `
-You are a senior sports broadcaster analyst and SEO director for HypeFixture.com.
+You are a senior sports broadcaster analyst and SEO director for TicketFixture.com.
 Generate exactly ${count} NEW, high-vitality sports SEO broadcast guides covering the biggest upcoming marquee games across our active coverage: ${activeSportsNames}.
 
 CRITICAL: Do NOT duplicate any of these existing topics: [${existingTitlesList}]. Every post must cover a fresh, high-hype matchup.
@@ -477,7 +477,7 @@ Output ONLY raw JSON with no backticks, markdown, or comments.
         cascadeResult.fallbackOccurred ? ` (Auto-recovered: ${attemptedSummary})` : ''
       }`;
 
-      console.log(`[HypeFixture Content Engine] ${summaryLog} in ${latencyMs}ms`);
+      console.log(`[TicketFixture Content Engine] ${summaryLog} in ${latencyMs}ms`);
 
       return {
         posts,

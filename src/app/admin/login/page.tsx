@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
             Administrator Portal
           </h1>
           <p className="text-xs text-slate-400">
-            Secure login for HypeFixture management and editorial staff.
+            Secure login for TicketFixture management and editorial staff.
           </p>
         </div>
 

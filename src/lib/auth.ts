@@ -126,5 +126,5 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/admin/login',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'hypefixture_secure_nextauth_secret_key_2026',
+  secret: process.env.NEXTAUTH_SECRET || 'TicketFixture_secure_nextauth_secret_key_2026',
 };

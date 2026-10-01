@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         fuboUrl: data.fuboUrl || 'https://www.fubo.tv',
         autoShareSocial: Boolean(data.autoShareSocial),
         autoIndexNow: data.autoIndexNow !== undefined ? Boolean(data.autoIndexNow) : true,
-        indexNowKey: data.indexNowKey || 'hypefixture-indexnow-2026-key',
+        indexNowKey: data.indexNowKey || 'TicketFixture-indexnow-2026-key',
         twitterApiKey: data.twitterApiKey || null,
         twitterApiSecret: data.twitterApiSecret || null,
         twitterAccessToken: data.twitterAccessToken || null,

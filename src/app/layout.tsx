@@ -6,8 +6,8 @@ import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | HypeFixture',
-    default: 'HypeFixture - Compare Verified Matchday Tickets, Fixtures & Stadium Seats',
+    template: '%s | TicketFixture',
+    default: 'TicketFixture - Compare Verified Matchday Tickets, Fixtures & Stadium Seats',
   },
   description:
     'Compare real-time verified matchday tickets, schedules, and stadium seating across SeatGeek, StubHub, and Viagogo. Find the cheapest seats with 100% money-back buyer protection.',
@@ -15,22 +15,23 @@ export const metadata: Metadata = {
     'matchday tickets',
     'compare sports tickets',
     'cheap football tickets',
-    'ipl cricket tickets',
+    'premier league tickets',
+    'el clasico tickets',
     'stadium seating guide',
     'seatgeek vs stubhub tickets',
   ],
-  metadataBase: new URL('https://hypefixture.com'),
+  metadataBase: new URL('https://ticketfixture.com'),
   icons: {
     icon: '/favicon-32.png',
     shortcut: '/favicon-32.png',
     apple: '/logo-icon.png',
   },
   openGraph: {
-    title: 'HypeFixture - Compare Verified Matchday Tickets & Stadium Seats',
+    title: 'TicketFixture - Compare Verified Matchday Tickets & Stadium Seats',
     description:
       'Real-time ticket price comparison, official schedules, and stadium seating blueprints for Football, Cricket, and Live Events.',
-    url: 'https://hypefixture.com',
-    siteName: 'HypeFixture',
+    url: 'https://ticketfixture.com',
+    siteName: 'TicketFixture',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -38,13 +39,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'HypeFixture - Compare Verified Matchday Tickets & Stadium Seats',
+        alt: 'TicketFixture - Compare Verified Matchday Tickets & Stadium Seats',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HypeFixture - Compare Verified Matchday Tickets & Stadium Seats',
+    title: 'TicketFixture - Compare Verified Matchday Tickets & Stadium Seats',
     description: 'Find verified matchday tickets and compare prices from SeatGeek, StubHub, and Viagogo.',
     images: ['/og-image.png'],
   },

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Instant IndexNow push to Bing/Yahoo/Yandex
     if (settings.autoIndexNow) {
-      const siteUrl = process.env.NEXTAUTH_URL || 'https://hypefixture.com';
+      const siteUrl = process.env.NEXTAUTH_URL || 'https://ticketfixture.com';
       const urls = saved.map((s) => `${siteUrl}/post/${s.slug}`);
       pushToIndexNow(urls).catch((e) => console.warn('Background IndexNow push error:', e));
     }

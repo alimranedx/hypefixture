@@ -20,10 +20,10 @@ export default function Footer() {
         <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 leading-relaxed">
           <div className="flex items-center gap-1.5 text-slate-300 font-bold mb-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>HypeFixture 100% Buyer Guarantee &amp; Editorial Transparency</span>
+            <span>TicketFixture 100% Buyer Guarantee &amp; Editorial Transparency</span>
           </div>
           <p>
-            HypeFixture is an independent matchday schedule, stadium guide, and ticket comparison portal. We compare real-time pricing across accredited secondary marketplaces (such as SeatGeek, StubHub, and Viagogo) whose listings carry 100% money-back buyer guarantees. We may earn a referral commission when tickets are booked through our comparison links, at zero additional cost to you.
+            TicketFixture is an independent matchday schedule, stadium guide, and ticket comparison portal. We compare real-time pricing across accredited secondary marketplaces (such as SeatGeek, StubHub, and Viagogo) whose listings carry 100% money-back buyer guarantees. We may earn a referral commission when tickets are booked through our comparison links, at zero additional cost to you.
           </p>
         </div>
 
@@ -34,14 +34,14 @@ export default function Footer() {
               <div className="relative w-8 h-8 rounded-lg overflow-hidden shadow-md shadow-emerald-500/10">
                 <Image
                   src="/logo-icon.png"
-                  alt="Hype Fixture Logo"
+                  alt="TicketFixture Logo"
                   width={32}
                   height={32}
                   className="w-full h-full object-cover"
                 />
               </div>
               <span className="text-lg font-black text-white tracking-tight">
-                HYPE<span className="text-emerald-400">FIXTURE</span>
+                TICKET<span className="text-emerald-400">FIXTURE</span>
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -136,7 +136,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-6 border-t border-slate-900 text-center text-xs text-slate-500">
-          &copy; {new Date().getFullYear()} HypeFixture.com. All sports club names, tournament names, and venue trademarks belong to their respective copyright holders.
+          &copy; {new Date().getFullYear()} TicketFixture.com. All sports club names, tournament names, and venue trademarks belong to their respective copyright holders.
         </div>
       </div>
     </footer>

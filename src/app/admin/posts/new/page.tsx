@@ -191,7 +191,7 @@ export default function CreateNewPostPage() {
                 </span>
               </label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 font-mono">hypefixture.com/post/</span>
+                <span className="text-xs text-slate-500 font-mono">ticketfixture.com/post/</span>
                 <input
                   type="text"
                   value={slug}

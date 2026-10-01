@@ -239,42 +239,42 @@ const horizontalSvg = `<?xml version="1.0" encoding="UTF-8"?>
   <g transform="translate(360, 0)">
     <!-- Top Sports Category Pill / Tag -->
     <g transform="translate(0, 56)">
-      <rect width="180" height="30" rx="15" fill="#042F2E" stroke="#14B8A6" stroke-width="1.5"/>
+      <rect width="210" height="30" rx="15" fill="#042F2E" stroke="#14B8A6" stroke-width="1.5"/>
       <circle cx="16" cy="15" r="5" fill="#2DD4BF" filter="url(#pulseGlow)"/>
-      <text x="32" y="20" fill="#2DD4BF" class="badge-text">LIVE MATCHDAY</text>
+      <text x="30" y="20" fill="#2DD4BF" class="badge-text">TICKET COMPARISON</text>
     </g>
 
     <!-- High CTR Broadcast Network Tag -->
-    <g transform="translate(196, 56)">
-      <rect width="170" height="30" rx="15" fill="#1E1B4B" stroke="#6366F1" stroke-width="1.5" stroke-opacity="0.6"/>
-      <text x="18" y="20" fill="#A5B4FC" class="badge-text">SPORTS MEDIA</text>
+    <g transform="translate(226, 56)">
+      <rect width="190" height="30" rx="15" fill="#1E1B4B" stroke="#6366F1" stroke-width="1.5" stroke-opacity="0.6"/>
+      <text x="20" y="20" fill="#A5B4FC" class="badge-text">100% GUARANTEED</text>
     </g>
 
-    <!-- Main Wordmark: HYPE FIXTURE -->
+    <!-- Main Wordmark: TICKET FIXTURE -->
     <g transform="translate(0, 172)">
-      <!-- HYPE -->
-      <text x="0" y="0" fill="#FFFFFF" font-size="104" class="brand-title">HYPE</text>
+      <!-- TICKET -->
+      <text x="0" y="0" fill="#FFFFFF" font-size="104" class="brand-title">TICKET</text>
       
       <!-- FIXTURE -->
-      <text x="310" y="0" fill="url(#fixtureTextGrad)" font-size="104" class="brand-title">FIXTURE</text>
+      <text x="410" y="0" fill="url(#fixtureTextGrad)" font-size="104" class="brand-title">FIXTURE</text>
 
       <!-- Pulsing Matchday Red Broadcast Beacon -->
-      <circle cx="785" cy="-70" r="13" fill="#EF4444" filter="url(#pulseGlow)"/>
-      <circle cx="785" cy="-70" r="7" fill="#FEE2E2"/>
+      <circle cx="890" cy="-70" r="13" fill="#EF4444" filter="url(#pulseGlow)"/>
+      <circle cx="890" cy="-70" r="7" fill="#FEE2E2"/>
     </g>
 
     <!-- Tagline & High-Traffic Keywords -->
     <g transform="translate(4, 225)">
       <text x="0" y="0" fill="#94A3B8" class="brand-sub">
-        WHERE TO WATCH <tspan fill="#34D399">•</tspan> LIVE STREAMS <tspan fill="#06B6D4">•</tspan> PREVIEWS
+        VERIFIED MATCH TICKETS <tspan fill="#34D399">•</tspan> STADIUM SEATS <tspan fill="#06B6D4">•</tspan> BEST VALUE
       </text>
     </g>
 
-    <!-- Sports Icons Badges Row (Football, Basketball, NFL, Fighting) -->
+    <!-- Sports Icons Badges Row -->
     <g transform="translate(2, 252)">
-      <rect width="790" height="36" rx="10" fill="#0F172A" stroke="#1E293B" stroke-width="1"/>
-      <text x="24" y="23" fill="#64748B" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="1.5">
-        ⚽ SOCCER &#160;|&#160; 🏈 NFL &#160;|&#160; 🏀 NBA &#160;|&#160; 🥊 UFC &amp; BOXING &#160;|&#160; ⚡ REAL-TIME SCHEDULES
+      <rect width="800" height="36" rx="10" fill="#0F172A" stroke="#1E293B" stroke-width="1"/>
+      <text x="20" y="23" fill="#64748B" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="1.5">
+        🎟️ PREMIER LEAGUE &#160;|&#160; 🇪🇸 EL CLÁSICO &#160;|&#160; 🏆 CHAMPIONS LEAGUE &#160;|&#160; 🛡️ 100% BUYER PROTECTION
       </text>
     </g>
   </g>
@@ -420,22 +420,22 @@ async function main() {
     </g>
 
     <!-- Main Title -->
-    <text x="215" y="105" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="82" font-style="italic" letter-spacing="-1px">HYPE<tspan fill="#34D399">FIXTURE</tspan></text>
-    <circle cx="820" cy="50" r="9" fill="#EF4444" filter="url(#ogNeon)"/>
+    <text x="215" y="105" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="76" font-style="italic" letter-spacing="-1px">TICKET<tspan fill="#34D399">FIXTURE</tspan></text>
+    <circle cx="850" cy="50" r="9" fill="#EF4444" filter="url(#ogNeon)"/>
 
     <!-- Subtitle -->
-    <text x="220" y="155" fill="#38BDF8" font-family="system-ui, sans-serif" font-weight="700" font-size="18" letter-spacing="4px">LIVE SPORTS STREAMING &amp; MATCHDAY SCHEDULES</text>
+    <text x="220" y="155" fill="#38BDF8" font-family="system-ui, sans-serif" font-weight="700" font-size="18" letter-spacing="4px">VERIFIED MATCHDAY TICKETS &amp; SEATING COMPARISON</text>
 
     <!-- Badge -->
-    <rect x="220" y="175" width="220" height="28" rx="14" fill="#064E3B" stroke="#059669" stroke-width="1"/>
-    <text x="238" y="194" fill="#6EE7B7" font-family="system-ui, sans-serif" font-weight="800" font-size="12" letter-spacing="2px">⚡ 100% VERIFIED CHANNELS</text>
+    <rect x="220" y="175" width="240" height="28" rx="14" fill="#064E3B" stroke="#059669" stroke-width="1"/>
+    <text x="238" y="194" fill="#6EE7B7" font-family="system-ui, sans-serif" font-weight="800" font-size="12" letter-spacing="2px">🛡️ 100% BUYER GUARANTEE</text>
   </g>
 
   <!-- Sports Category Footer Bar -->
   <g transform="translate(180, 440)">
     <rect width="840" height="70" rx="18" fill="#0B132B" stroke="#1E293B" stroke-width="1.5"/>
     <text x="40" y="42" fill="#94A3B8" font-family="system-ui, sans-serif" font-size="20" font-weight="700">
-      ⚽ Football &#160;•&#160; 🏀 NBA &#160;•&#160; 🏈 NFL &#160;•&#160; 🥊 UFC &amp; Boxing &#160;•&#160; 📺 Official Broadcasters
+      🎟️ Premier League &#160;•&#160; 🇪🇸 El Clásico &#160;•&#160; 🏆 Champions League &#160;•&#160; 🛡️ SeatGeek &amp; StubHub
     </text>
   </g>
 </svg>`;

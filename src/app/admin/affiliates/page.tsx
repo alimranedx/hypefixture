@@ -2,7 +2,7 @@ import React from 'react';
 import AffiliatesSection from '@/components/admin/sections/AffiliatesSection';
 
 export const metadata = {
-  title: 'Affiliate Conversions & EPC Hub | HypeFixture Admin',
+  title: 'Affiliate Conversions & EPC Hub | TicketFixture Admin',
   description: 'Manage cloaked affiliate outbound hops and commission partner URLs',
 };
 

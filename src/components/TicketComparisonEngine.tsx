@@ -184,7 +184,7 @@ export default function TicketComparisonEngine({
       <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 leading-relaxed">
         <AlertCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
         <p>
-          <strong>HypeFixture Fan Guarantee:</strong> All partner exchanges are monitored for pricing accuracy, legitimate barcodes, and 100% refund compliance. Prices may be above or below face value based on matchday demand. We may earn a partner referral fee when tickets are purchased through our comparison links at zero additional cost to you.
+          <strong>TicketFixture Fan Guarantee:</strong> All partner exchanges are monitored for pricing accuracy, legitimate barcodes, and 100% refund compliance. Prices may be above or below face value based on matchday demand. We may earn a partner referral fee when tickets are purchased through our comparison links at zero additional cost to you.
         </p>
       </div>
     </div>

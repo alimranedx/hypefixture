@@ -4,7 +4,7 @@ import { generateDailyHypePosts, saveGeneratedPostsToDatabase } from '@/lib/gemi
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'hypefixture_cron_key_987654';
+  const cronSecret = process.env.CRON_SECRET || 'TicketFixture_cron_key_987654';
 
   // Secure cron endpoint
   if (authHeader !== `Bearer ${cronSecret}`) {

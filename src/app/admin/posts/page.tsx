@@ -2,7 +2,7 @@ import React from 'react';
 import PostsSection from '@/components/admin/sections/PostsSection';
 
 export const metadata = {
-  title: 'Post Management & Article CMS | HypeFixture Admin',
+  title: 'Post Management & Article CMS | TicketFixture Admin',
   description: 'Manage live match guides, SEO articles, drafts, and schedule directory',
 };
 

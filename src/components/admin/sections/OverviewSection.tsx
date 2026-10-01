@@ -83,7 +83,7 @@ export default function OverviewSection() {
             </span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            HypeFixture content engine monitors upcoming marquee games across Football, Cricket, and live stadium events. Every cycle prompts Google Gemini with strict deduplication to ensure fresh, zero-duplicate organic rankings.
+            TicketFixture content engine monitors upcoming marquee games across Football, Cricket, and live stadium events. Every cycle prompts Google Gemini with strict deduplication to ensure fresh, zero-duplicate organic rankings.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-3">

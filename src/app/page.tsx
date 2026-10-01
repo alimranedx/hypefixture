@@ -27,11 +27,11 @@ export default async function HomePage() {
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'HypeFixture',
-    url: 'https://hypefixture.com',
+    name: 'TicketFixture',
+    url: 'https://ticketfixture.com',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://hypefixture.com/search?q={search_term_string}',
+      target: 'https://ticketfixture.com/search?q={search_term_string}',
       'query-input': 'required name=search_term_string',
     },
   };
@@ -308,7 +308,7 @@ export default async function HomePage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2">
             <h3 className="font-bold text-white text-base">How do I buy sold-out Premier League &amp; European Football tickets safely?</h3>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Official club box offices typically sell out tickets to paying club members within minutes. HypeFixture compares prices across verified secondary exchanges like SeatGeek, StubHub, and Viagogo that provide 100% money-back buyer guarantees, ensuring you receive authentic barcodes before kickoff.
+              Official club box offices typically sell out tickets to paying club members within minutes. TicketFixture compares prices across verified secondary exchanges like SeatGeek, StubHub, and Viagogo that provide 100% money-back buyer guarantees, ensuring you receive authentic barcodes before kickoff.
             </p>
           </div>
 
@@ -322,7 +322,7 @@ export default async function HomePage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2">
             <h3 className="font-bold text-white text-base">When will my mobile matchday ticket arrive?</h3>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Most European clubs issue digital NFC / Apple Wallet passes or PDF e-tickets 24 to 48 hours before match kickoff. All partner marketplaces backed on HypeFixture provide instant or expedited digital delivery with 100% buyer protection.
+              Most European clubs issue digital NFC / Apple Wallet passes or PDF e-tickets 24 to 48 hours before match kickoff. All partner marketplaces backed on TicketFixture provide instant or expedited digital delivery with 100% buyer protection.
             </p>
           </div>
         </div>

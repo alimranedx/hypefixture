@@ -4,7 +4,7 @@ import { getAllTicketEvents } from '@/lib/tickets';
 import { getActiveSports } from '@/lib/sports';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://hypefixture.com';
+  const baseUrl = 'https://ticketfixture.com';
 
   // 1. Core Hub Routes
   const coreRoutes: MetadataRoute.Sitemap = [

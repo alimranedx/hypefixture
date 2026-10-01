@@ -92,11 +92,11 @@ export default function TicketsManagementSection() {
       demandStatus: 'HIGH_DEMAND',
       featuredImage: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
       seatgeekPrice: 135,
-      seatgeekUrl: 'https://seatgeek.com/?ref=hypefixture',
+      seatgeekUrl: 'https://seatgeek.com/?ref=ticketfixture',
       stubhubPrice: 89,
-      stubhubUrl: 'https://stubhub.com/?ref=hypefixture',
+      stubhubUrl: 'https://stubhub.com/?ref=ticketfixture',
       viagogoPrice: 110,
-      viagogoUrl: 'https://viagogo.com/?ref=hypefixture',
+      viagogoUrl: 'https://viagogo.com/?ref=ticketfixture',
       isActive: true,
     });
     setIsModalOpen(true);

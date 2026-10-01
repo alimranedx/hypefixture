@@ -73,12 +73,12 @@ export default function SyndicationSection() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
             <span className="text-[10px] font-bold uppercase text-slate-500 block">Host Domain</span>
-            <span className="text-sm font-bold text-white font-mono mt-1 block">hypefixture.com</span>
+            <span className="text-sm font-bold text-white font-mono mt-1 block">ticketfixture.com</span>
           </div>
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
             <span className="text-[10px] font-bold uppercase text-slate-500 block">IndexNow Key</span>
             <span className="text-xs font-bold text-emerald-400 font-mono mt-1 block truncate">
-              {settings.indexNowKey || 'hypefixture-key-2026'}
+              {settings.indexNowKey || 'TicketFixture-key-2026'}
             </span>
           </div>
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">

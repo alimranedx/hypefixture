@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
   ) {
     const token = await getToken({
       req,
-      secret: process.env.NEXTAUTH_SECRET || 'hypefixture_secure_nextauth_secret_key_2026',
+      secret: process.env.NEXTAUTH_SECRET || 'TicketFixture_secure_nextauth_secret_key_2026',
     });
 
     const userRole = token?.role;

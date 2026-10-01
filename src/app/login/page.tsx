@@ -50,7 +50,7 @@ export default function LoginPage() {
             <Flame className="w-7 h-7 text-slate-950 fill-slate-950" />
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight">
-            Sign In to <span className="text-emerald-400">HypeFixture</span>
+            Sign In to <span className="text-emerald-400">TicketFixture</span>
           </h1>
           <p className="text-xs text-slate-400">
             Access your saved match schedules, ticket alerts, and personalized fixture bookmarks.

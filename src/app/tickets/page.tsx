@@ -40,7 +40,7 @@ export default function TicketsPage() {
                   price: t.seatgeekPrice || t.minPrice + 15,
                   originalCurrency: t.currency,
                   isBestValue: true,
-                  affiliateUrl: t.seatgeekUrl || `https://seatgeek.com/search?search=${encodeURIComponent(t.title)}&ref=hypefixture`,
+                  affiliateUrl: t.seatgeekUrl || `https://seatgeek.com/search?search=${encodeURIComponent(t.title)}&ref=ticketfixture`,
                 },
                 {
                   id: `off-sh-${t.slug}`,
@@ -49,7 +49,7 @@ export default function TicketsPage() {
                   price: t.stubhubPrice || t.minPrice,
                   originalCurrency: t.currency,
                   isBestValue: false,
-                  affiliateUrl: t.stubhubUrl || `https://stubhub.com/search?q=${encodeURIComponent(t.title)}&ref=hypefixture`,
+                  affiliateUrl: t.stubhubUrl || `https://stubhub.com/search?q=${encodeURIComponent(t.title)}&ref=ticketfixture`,
                 },
               ],
             };
@@ -295,10 +295,10 @@ export default function TicketsPage() {
       <div className="rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 p-6 sm:p-8 space-y-4">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-emerald-400" />
-          The HypeFixture 100% Ticket Buyer Guarantee
+          The TicketFixture 100% Ticket Buyer Guarantee
         </h3>
         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-          Every ticket marketplace featured on HypeFixture (including SeatGeek, StubHub, and Viagogo) provides an ironclad buyer guarantee. Your tickets will be authentic, valid for stadium entry, and delivered in time for the event — or you will receive a full 100% refund.
+          Every ticket marketplace featured on TicketFixture (including SeatGeek, StubHub, and Viagogo) provides an ironclad buyer guarantee. Your tickets will be authentic, valid for stadium entry, and delivered in time for the event — or you will receive a full 100% refund.
         </p>
       </div>
     </div>

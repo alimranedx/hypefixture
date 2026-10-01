@@ -1,6 +1,6 @@
-# 🎟️ HypeFixture - Ticket Affiliate Partnership Master Guide
+# 🎟️ TicketFixture - Ticket Affiliate Partnership Master Guide
 
-This guide provides step-by-step instructions on how to create accounts, pass partner approval, generate tracking links, and integrate the top 2 ticket affiliate networks directly into **HypeFixture**.
+This guide provides step-by-step instructions on how to create accounts, pass partner approval, generate tracking links, and integrate the top 2 ticket affiliate networks directly into **TicketFixture**.
 
 ---
 
@@ -22,8 +22,8 @@ StubHub International and Viagogo operate under the same corporate marketplace e
 2. Click **Sign Up** as a **Publisher** (Content Creator / Affiliate).
 3. Fill in your account details:
    * **Account Type**: Publisher / Content Creator
-   * **Company / Website Name**: HypeFixture
-   * **Website URL**: `https://hypefixture.com` (or your staging/live domain)
+   * **Company / Website Name**: TicketFixture
+   * **Website URL**: `https://ticketfixture.com` (or your staging/live domain)
    * **Primary Region**: United Kingdom / United States / Global
    * **Sectors**: *Shopping > Tickets & Events* and *Sports & Recreation*.
 
@@ -36,7 +36,7 @@ StubHub International and Viagogo operate under the same corporate marketplace e
 When Awin or StubHub asks to describe your promotional method and website, copy and paste this text:
 
 ```text
-HypeFixture (https://hypefixture.com) is an event fixture schedule and sports ticket price comparison platform. We cater to international football fans, expats, and sports tourists traveling to the UK and Europe who are looking to secure authentic, verified match tickets for sold-out derbies (Premier League, El Clásico, and UEFA Champions League).
+TicketFixture (https://ticketfixture.com) is an event fixture schedule and sports ticket price comparison platform. We cater to international football fans, expats, and sports tourists traveling to the UK and Europe who are looking to secure authentic, verified match tickets for sold-out derbies (Premier League, El Clásico, and UEFA Champions League).
 
 We provide stadium seating breakdowns, fixture dates, legal broadcast information, and price comparison across accredited secondary marketplaces with 100% money-back guarantees. We promote verified ticket partners via contextual match guides, organic search SEO, and direct event comparison engines.
 ```
@@ -63,7 +63,7 @@ We provide stadium seating breakdowns, fixture dates, legal broadcast informatio
 3. In the destination URL, you can enter the homepage (`https://www.stubhub.ie` or `https://www.stubhub.co.uk`) or deep-link to a specific team search (e.g., `https://www.stubhub.co.uk/arsenal-tickets/`).
 4. Click **Generate Link**.
 5. Your link will look like:
-   `https://www.awin1.com/cread.php?awinmid=7029&awinaffid=YOUR_PUBLISHER_ID&clickref=hypefixture&ued=https%3A%2F%2Fwww.stubhub.co.uk%2F`
+   `https://www.awin1.com/cread.php?awinmid=7029&awinaffid=YOUR_PUBLISHER_ID&clickref=ticketfixture&ued=https%3A%2F%2Fwww.stubhub.co.uk%2F`
 
 ---
 
@@ -76,8 +76,8 @@ SeatGeek is the most recognized secondary ticketing technology platform in the w
 2. Click **Sign Up** → **As a Partner / Media Partner / Creator**.
 3. Select your media type as **Website / Media Publisher**.
 4. Enter your property details:
-   * **Property Name**: HypeFixture
-   * **URL**: `https://hypefixture.com`
+   * **Property Name**: TicketFixture
+   * **URL**: `https://ticketfixture.com`
    * **Primary Audience**: Sports Fans, Event Attendees, Ticket Buyers.
 
 ---
@@ -101,12 +101,12 @@ SeatGeek is the most recognized secondary ticketing technology platform in the w
 
 ---
 
-## 3. How to Connect Your Affiliate Links to HypeFixture
+## 3. How to Connect Your Affiliate Links to TicketFixture
 
-Once you receive your affiliate tracking links, follow these two simple steps in your HypeFixture Admin Panel:
+Once you receive your affiliate tracking links, follow these two simple steps in your TicketFixture Admin Panel:
 
 ### A. Update Global Cloaked Hop Links (Instant Site-Wide Update)
-HypeFixture automatically protects your SEO and hides raw affiliate URLs using cloaked redirect hops (`/go/stubhub`, `/go/seatgeek`, `/go/viagogo`):
+TicketFixture automatically protects your SEO and hides raw affiliate URLs using cloaked redirect hops (`/go/stubhub`, `/go/seatgeek`, `/go/viagogo`):
 
 1. Open your browser and go to your Admin Panel:
    **`http://localhost:3000/admin/affiliates`**
@@ -136,4 +136,5 @@ Deep linking directly to the specific match page yields a **300% higher conversi
 1. **Keep Your Site Live and Clean**: Before applying, make sure your website is running with active fixtures and clean ticket comparison tables. Having visible content proves to affiliate managers that you are a legitimate publisher.
 2. **Emphasize International Sports Tourism**: Highlight that you target overseas fans traveling to the UK/Europe. Advertisers love international buyers because their cart values are much higher (€500+).
 3. **Never Mention Scrapes or Bots**: Always state that you provide editorial reviews, stadium guides, and curated price comparisons with verified buyer guarantees.
-4. **Disclose Affiliate Relationships**: HypeFixture already includes compliant buyer guarantee and partner notices in the footer, satisfying FTC and ASA affiliate disclosure rules.
+4. **Disclose Affiliate Relationships**: TicketFixture already includes compliant buyer guarantee and partner notices in the footer, satisfying FTC and ASA affiliate disclosure rules.
+

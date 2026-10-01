@@ -18,7 +18,7 @@ export async function GET(
     },
   });
 
-  let destination = 'https://seatgeek.com/?ref=hypefixture';
+  let destination = 'https://seatgeek.com/?ref=ticketfixture';
 
   if (dbPartner) {
     destination = dbPartner.targetUrl;
@@ -29,13 +29,13 @@ export async function GET(
     }).catch(() => null);
   } else {
     if (partnerSlug.includes('stubhub')) {
-      destination = 'https://stubhub.com/?ref=hypefixture';
+      destination = 'https://stubhub.com/?ref=ticketfixture';
     } else if (partnerSlug.includes('viagogo')) {
-      destination = 'https://viagogo.com/?ref=hypefixture';
+      destination = 'https://viagogo.com/?ref=ticketfixture';
     } else if (partnerSlug.includes('tickpick')) {
-      destination = 'https://tickpick.com/?ref=hypefixture';
+      destination = 'https://tickpick.com/?ref=ticketfixture';
     } else {
-      destination = 'https://seatgeek.com/?ref=hypefixture';
+      destination = 'https://seatgeek.com/?ref=ticketfixture';
     }
   }
 

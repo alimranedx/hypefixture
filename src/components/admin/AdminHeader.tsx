@@ -86,6 +86,12 @@ export default function AdminHeader() {
         subtitle: 'Dynamic sport categories, AI cluster targeting, and editorial coverage',
       };
     }
+    if (pathname === '/admin/tickets') {
+      return {
+        title: 'Match Tickets & Secondary Pricing Hub',
+        subtitle: 'Dynamic European football fixtures, live vendor pricing & affiliate deep links',
+      };
+    }
     if (pathname === '/admin/governance' || pathname === '/admin/security') {
       return {
         title: 'Super Admin Governance & Approvals',
@@ -93,7 +99,7 @@ export default function AdminHeader() {
       };
     }
     return {
-      title: 'HypeFixture Admin Control Center',
+      title: 'TicketFixture Admin Control Center',
       subtitle: 'Senior Sports Broadcasting & AI Automation Engine',
     };
   };

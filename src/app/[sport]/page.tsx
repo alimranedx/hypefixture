@@ -23,7 +23,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: SportPageProps): Promise<Metadata> {
   const { sport } = await params;
   const sportData = await getSportBySlug(sport);
-  if (!sportData) return { title: 'Sport Not Found | HypeFixture' };
+  if (!sportData) return { title: 'Sport Not Found | TicketFixture' };
 
   return {
     title: `${sportData.icon || '🏆'} ${sportData.name} Broadcasts & Live Streams | Where to Watch`,

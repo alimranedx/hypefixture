@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
           cascadeResult.fallbackOccurred ? ' (auto-recovered from busy model)' : ''
         }`;
 
-        console.log(`[HypeFixture Keywords AI] ${shortLog}`);
+        console.log(`[TicketFixture Keywords AI] ${shortLog}`);
 
         return NextResponse.json({
           success: true,

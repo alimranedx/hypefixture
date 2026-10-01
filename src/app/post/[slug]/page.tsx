@@ -60,8 +60,8 @@ export default async function PostPage({ params }: PostPageProps) {
     dateModified: post.updatedAt.toISOString(),
     publisher: {
       '@type': 'Organization',
-      name: 'HypeFixture',
-      url: 'https://hypefixture.com',
+      name: 'TicketFixture',
+      url: 'https://ticketfixture.com',
     },
   };
 

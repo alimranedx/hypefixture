@@ -58,9 +58,9 @@ export async function pushToIndexNow(urls: string[]): Promise<{ success: boolean
     const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
     const host = process.env.NEXT_PUBLIC_SITE_URL
       ? new URL(process.env.NEXT_PUBLIC_SITE_URL).host
-      : 'hypefixture.com';
+      : 'ticketfixture.com';
 
-    const indexNowKey = settings?.indexNowKey || process.env.INDEXNOW_KEY || 'hypefixture-indexnow-2026-key';
+    const indexNowKey = settings?.indexNowKey || process.env.INDEXNOW_KEY || 'TicketFixture-indexnow-2026-key';
 
     const payload = {
       host,
@@ -118,7 +118,7 @@ export async function sharePostToTwitter(post: {
       };
     }
 
-    const siteUrl = process.env.NEXTAUTH_URL || 'https://hypefixture.com';
+    const siteUrl = process.env.NEXTAUTH_URL || 'https://ticketfixture.com';
     const postUrl = `${siteUrl}/post/${post.slug}`;
     const sportTag = post.sport.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
@@ -171,7 +171,7 @@ export async function sharePostToFacebook(post: {
       };
     }
 
-    const siteUrl = process.env.NEXTAUTH_URL || 'https://hypefixture.com';
+    const siteUrl = process.env.NEXTAUTH_URL || 'https://ticketfixture.com';
     const postUrl = `${siteUrl}/post/${post.slug}`;
 
     const url = `https://graph.facebook.com/v19.0/${pageId}/feed`;
@@ -221,7 +221,7 @@ export async function sharePostToPinterest(post: {
       };
     }
 
-    const siteUrl = process.env.NEXTAUTH_URL || 'https://hypefixture.com';
+    const siteUrl = process.env.NEXTAUTH_URL || 'https://ticketfixture.com';
     const postUrl = `${siteUrl}/post/${post.slug}`;
     const imageUrl = post.featuredImage || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80';
 
@@ -267,7 +267,7 @@ export async function syndicatePost(postId: string): Promise<SyndicationReport> 
     throw new Error('Post not found');
   }
 
-  const siteUrl = process.env.NEXTAUTH_URL || 'https://hypefixture.com';
+  const siteUrl = process.env.NEXTAUTH_URL || 'https://ticketfixture.com';
   const postUrl = `${siteUrl}/post/${post.slug}`;
 
   // 1. IndexNow Push

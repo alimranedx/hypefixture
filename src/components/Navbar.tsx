@@ -77,7 +77,7 @@ export default function Navbar({ initialSports }: NavbarProps) {
             <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
               <Image
                 src="/logo-icon.png"
-                alt="Hype Fixture Logo"
+                alt="TicketFixture Logo"
                 width={40}
                 height={40}
                 className="w-full h-full object-cover"
@@ -86,11 +86,11 @@ export default function Navbar({ initialSports }: NavbarProps) {
             </div>
             <div>
               <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                HYPE<span className="text-emerald-400">FIXTURE</span>
+                TICKET<span className="text-emerald-400">FIXTURE</span>
                 <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               </span>
               <span className="text-[10px] text-slate-400 font-medium block -mt-1 tracking-wider uppercase">
-                Matchday Tickets &amp; Fixtures
+                Verified Match Tickets &amp; Seats
               </span>
             </div>
           </Link>

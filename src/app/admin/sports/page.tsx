@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import SportsSection from '@/components/admin/sections/SportsSection';
 
 export const metadata = {
-  title: 'Sports Coverage & Dynamic Categories | HypeFixture Admin',
+  title: 'Sports Coverage & Dynamic Categories | TicketFixture Admin',
   description: 'Manage dynamic sports coverage, active selection, and Gemini cluster targeting',
 };
 

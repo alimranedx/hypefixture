@@ -2,7 +2,7 @@ import React from 'react';
 import SyndicationSection from '@/components/admin/sections/SyndicationSection';
 
 export const metadata = {
-  title: 'Social & SEO Hub | HypeFixture Admin',
+  title: 'Social & SEO Hub | TicketFixture Admin',
   description: 'Manage IndexNow instant submission and social media broadcast distribution',
 };
 

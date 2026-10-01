@@ -26,7 +26,7 @@ export default function LiveMatchesPage() {
     headline: 'Real-Time Sports Live Match Center - Today\'s In-Play Scores & Broadcast Channels',
     description:
       'Continuous real-time scorecards and verified broadcast channels for in-play Football, Cricket, NFL, and Rugby fixtures.',
-    url: 'https://hypefixture.com/live',
+    url: 'https://ticketfixture.com/live',
     coverageStartTime: new Date().toISOString(),
   };
 

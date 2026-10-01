@@ -102,7 +102,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: '100% Buyer Guarantee',
         instantDownload: true,
         isBestValue: true,
-        affiliateUrl: 'https://seatgeek.com/search?search=Arsenal+vs+Chelsea&ref=hypefixture',
+        affiliateUrl: 'https://seatgeek.com/search?search=Arsenal+vs+Chelsea&ref=ticketfixture',
       },
       {
         id: 'off-sh-ars-che-2',
@@ -117,7 +117,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'StubHub FanProtect™ Guarantee',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://stubhub.com/search?q=Arsenal+vs+Chelsea&ref=hypefixture',
+        affiliateUrl: 'https://stubhub.com/search?q=Arsenal+vs+Chelsea&ref=ticketfixture',
       },
       {
         id: 'off-vg-ars-che-3',
@@ -132,7 +132,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'Verified Resale Ticket',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://viagogo.com/search?q=Arsenal+Chelsea&ref=hypefixture',
+        affiliateUrl: 'https://viagogo.com/search?q=Arsenal+Chelsea&ref=ticketfixture',
       },
       {
         id: 'off-tp-ars-che-4',
@@ -147,7 +147,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'No Added Hidden Buyer Fees',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://tickpick.com/search?q=Arsenal+vs+Chelsea&ref=hypefixture',
+        affiliateUrl: 'https://tickpick.com/search?q=Arsenal+vs+Chelsea&ref=ticketfixture',
       },
       {
         id: 'off-hosp-ars-che-5',
@@ -162,7 +162,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'Official Arsenal Hospitality',
         instantDownload: false,
         isBestValue: false,
-        affiliateUrl: 'https://www.arsenal.com/tickets?ref=hypefixture',
+        affiliateUrl: 'https://www.arsenal.com/tickets?ref=ticketfixture',
       },
     ],
     seatingTiers: [
@@ -202,7 +202,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
     faqs: [
       {
         question: 'Are Arsenal vs Chelsea tickets 100% genuine and guaranteed?',
-        answer: 'Yes. All vendors indexed on HypeFixture (SeatGeek, StubHub, Viagogo, TickPick) provide comprehensive 100% money-back buyer guarantees. If an event is cancelled or tickets do not arrive in time, you receive a full refund or comparable replacement tickets.',
+        answer: 'Yes. All vendors indexed on TicketFixture (SeatGeek, StubHub, Viagogo, TickPick) provide comprehensive 100% money-back buyer guarantees. If an event is cancelled or tickets do not arrive in time, you receive a full refund or comparable replacement tickets.',
       },
       {
         question: 'When will I receive my mobile matchday ticket?',
@@ -258,7 +258,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: '100% Buyer Guarantee',
         instantDownload: true,
         isBestValue: true,
-        affiliateUrl: 'https://seatgeek.com/search?search=Real+Madrid+Barcelona&ref=hypefixture',
+        affiliateUrl: 'https://seatgeek.com/search?search=Real+Madrid+Barcelona&ref=ticketfixture',
       },
       {
         id: 'off-sh-rm-fcb-2',
@@ -273,7 +273,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'FanProtect™ Guarantee',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://stubhub.com/search?q=El+Clasico+Madrid&ref=hypefixture',
+        affiliateUrl: 'https://stubhub.com/search?q=El+Clasico+Madrid&ref=ticketfixture',
       },
       {
         id: 'off-vg-rm-fcb-3',
@@ -288,7 +288,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'Verified Reseller',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://viagogo.com/search?q=Real+Madrid+vs+Barcelona&ref=hypefixture',
+        affiliateUrl: 'https://viagogo.com/search?q=Real+Madrid+vs+Barcelona&ref=ticketfixture',
       },
       {
         id: 'off-vip-rm-fcb-4',
@@ -303,7 +303,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'Official Real Madrid Hospitality',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://www.realmadrid.com/en-US/tickets?ref=hypefixture',
+        affiliateUrl: 'https://www.realmadrid.com/en-US/tickets?ref=ticketfixture',
       },
     ],
     seatingTiers: [
@@ -387,7 +387,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: '100% Verified Buyer Protection',
         instantDownload: true,
         isBestValue: true,
-        affiliateUrl: 'https://seatgeek.com/search?search=India+vs+Pakistan+Cricket&ref=hypefixture',
+        affiliateUrl: 'https://seatgeek.com/search?search=India+vs+Pakistan+Cricket&ref=ticketfixture',
       },
       {
         id: 'off-sh-ind-pak-2',
@@ -402,7 +402,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'FanProtect™ Ticket Guarantee',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://stubhub.com/search?q=India+Pakistan+Cricket&ref=hypefixture',
+        affiliateUrl: 'https://stubhub.com/search?q=India+Pakistan+Cricket&ref=ticketfixture',
       },
       {
         id: 'off-vg-ind-pak-3',
@@ -417,7 +417,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'International Resale Guarantee',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://viagogo.com/search?q=India+vs+Pakistan+Dubai&ref=hypefixture',
+        affiliateUrl: 'https://viagogo.com/search?q=India+vs+Pakistan+Dubai&ref=ticketfixture',
       },
       {
         id: 'off-box-ind-pak-4',
@@ -432,7 +432,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'Official ICC Hospitality',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://www.icc-cricket.com/tickets?ref=hypefixture',
+        affiliateUrl: 'https://www.icc-cricket.com/tickets?ref=ticketfixture',
       },
     ],
     seatingTiers: [
@@ -516,7 +516,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: '100% Verified Ticket Delivery',
         instantDownload: true,
         isBestValue: true,
-        affiliateUrl: 'https://seatgeek.com/search?search=CSK+vs+Mumbai+Indians&ref=hypefixture',
+        affiliateUrl: 'https://seatgeek.com/search?search=CSK+vs+Mumbai+Indians&ref=ticketfixture',
       },
       {
         id: 'off-sh-csk-mi-2',
@@ -531,7 +531,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'FanProtect™ Guarantee',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://stubhub.com/search?q=CSK+vs+MI+IPL&ref=hypefixture',
+        affiliateUrl: 'https://stubhub.com/search?q=CSK+vs+MI+IPL&ref=ticketfixture',
       },
       {
         id: 'off-vg-csk-mi-3',
@@ -546,7 +546,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'Money Back Guarantee',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://viagogo.com/search?q=CSK+Mumbai+Indians&ref=hypefixture',
+        affiliateUrl: 'https://viagogo.com/search?q=CSK+Mumbai+Indians&ref=ticketfixture',
       },
     ],
     seatingTiers: [
@@ -626,7 +626,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: '100% Buyer Guarantee',
         instantDownload: true,
         isBestValue: true,
-        affiliateUrl: 'https://seatgeek.com/search?search=Man+City+vs+Liverpool&ref=hypefixture',
+        affiliateUrl: 'https://seatgeek.com/search?search=Man+City+vs+Liverpool&ref=ticketfixture',
       },
       {
         id: 'off-sh-mci-liv-2',
@@ -641,7 +641,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'FanProtect™ Ticket Guarantee',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://stubhub.com/search?q=Man+City+vs+Liverpool&ref=hypefixture',
+        affiliateUrl: 'https://stubhub.com/search?q=Man+City+vs+Liverpool&ref=ticketfixture',
       },
       {
         id: 'off-vg-mci-liv-3',
@@ -656,7 +656,7 @@ export const TICKET_EVENTS: TicketMatchEvent[] = [
         guaranteeBadge: 'Verified Reseller',
         instantDownload: true,
         isBestValue: false,
-        affiliateUrl: 'https://viagogo.com/search?q=Man+City+Liverpool&ref=hypefixture',
+        affiliateUrl: 'https://viagogo.com/search?q=Man+City+Liverpool&ref=ticketfixture',
       },
     ],
     seatingTiers: [
@@ -706,7 +706,7 @@ export function mapDbFixtureToEvent(db: any): TicketMatchEvent {
       guaranteeBadge: '100% Buyer Guarantee',
       instantDownload: true,
       isBestValue: sgPrice <= shPrice,
-      affiliateUrl: db.seatgeekUrl || `https://seatgeek.com/search?search=${encodeURIComponent(db.title)}&ref=hypefixture`,
+      affiliateUrl: db.seatgeekUrl || `https://seatgeek.com/search?search=${encodeURIComponent(db.title)}&ref=ticketfixture`,
     },
     {
       id: `off-sh-${db.slug}`,
@@ -721,7 +721,7 @@ export function mapDbFixtureToEvent(db: any): TicketMatchEvent {
       guaranteeBadge: 'StubHub FanProtect™ Guarantee',
       instantDownload: true,
       isBestValue: shPrice < sgPrice,
-      affiliateUrl: db.stubhubUrl || `https://stubhub.com/search?q=${encodeURIComponent(db.title)}&ref=hypefixture`,
+      affiliateUrl: db.stubhubUrl || `https://stubhub.com/search?q=${encodeURIComponent(db.title)}&ref=ticketfixture`,
     },
     {
       id: `off-vg-${db.slug}`,
@@ -736,7 +736,7 @@ export function mapDbFixtureToEvent(db: any): TicketMatchEvent {
       guaranteeBadge: 'Verified Resale Ticket',
       instantDownload: true,
       isBestValue: false,
-      affiliateUrl: db.viagogoUrl || `https://viagogo.com/search?q=${encodeURIComponent(db.title)}&ref=hypefixture`,
+      affiliateUrl: db.viagogoUrl || `https://viagogo.com/search?q=${encodeURIComponent(db.title)}&ref=ticketfixture`,
     },
   ];
 

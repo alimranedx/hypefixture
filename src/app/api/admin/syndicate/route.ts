@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         take: 50,
       });
 
-      const siteUrl = process.env.NEXTAUTH_URL || 'https://hypefixture.com';
+      const siteUrl = process.env.NEXTAUTH_URL || 'https://ticketfixture.com';
       const urls = targetPosts.map((p) => `${siteUrl}/post/${p.slug}`);
 
       const result = await pushToIndexNow(urls);
