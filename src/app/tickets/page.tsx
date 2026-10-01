@@ -15,6 +15,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { TICKET_EVENTS } from '@/lib/tickets';
+import HeroMotionBackground from '@/components/HeroMotionBackground';
 
 export default function TicketsPage() {
   const [eventsList, setEventsList] = useState(TICKET_EVENTS);
@@ -83,39 +84,42 @@ export default function TicketsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-950 p-6 sm:p-12 text-center space-y-5 shadow-2xl">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-          <Ticket className="w-3.5 h-3.5 text-emerald-400" />
-          The Live Sports &amp; Event Ticket Aggregator
-        </div>
+      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 p-6 sm:p-12 text-center space-y-5 shadow-2xl">
+        <HeroMotionBackground isCompact={true} />
+        <div className="relative z-10 space-y-5">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <Ticket className="w-3.5 h-3.5 text-emerald-400" />
+            🇪🇺 European Matchday Ticket Aggregator
+          </div>
 
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight max-w-3xl mx-auto leading-none">
-          Compare Verified Matchday <span className="text-emerald-400">Tickets &amp; Seats</span>
-        </h1>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight max-w-3xl mx-auto leading-none">
+            Compare European <span className="text-emerald-400">Matchday Tickets</span>
+          </h1>
 
-        <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Compare real-time prices across accredited secondary marketplaces like <strong>SeatGeek</strong>, <strong>StubHub</strong>, and <strong>Viagogo</strong>. 100% money-back buyer guarantee on every booking.
-        </p>
+          <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Compare verified prices for European Football &amp; Cricket across accredited marketplaces like <strong>SeatGeek</strong>, <strong>StubHub</strong>, and <strong>Viagogo</strong> in <strong className="text-white">GBP (£)</strong> and <strong className="text-white">EUR (€)</strong> with 100% buyer guarantee.
+          </p>
 
-        {/* Search Bar Input */}
-        <div className="max-w-xl mx-auto pt-2">
-          <div className="relative flex items-center">
-            <Search className="absolute left-4 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by team, derby, tournament, stadium or city..."
-              className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm font-medium focus:outline-none focus:border-emerald-500 transition shadow-inner"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-4 text-xs font-bold text-slate-400 hover:text-white"
-              >
-                Clear
-              </button>
-            )}
+          {/* Search Bar Input */}
+          <div className="max-w-xl mx-auto pt-2">
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by team, derby, tournament, stadium or city..."
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-950/90 border border-slate-700/80 text-white placeholder-slate-500 text-sm font-medium focus:outline-none focus:border-emerald-500 transition shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 text-xs font-bold text-slate-400 hover:text-white"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -159,7 +163,7 @@ export default function TicketsPage() {
         {/* Max Price Slider */}
         <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 self-start md:self-auto">
           <span className="text-xs font-bold text-slate-400 whitespace-nowrap">
-            Max Price: <strong className="text-white">${maxPrice}</strong>
+            Max Price: <strong className="text-white">£/€{maxPrice}</strong>
           </span>
           <input
             type="range"

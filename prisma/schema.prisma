@@ -127,6 +127,14 @@ model SystemSetting {
   // Pinterest API
   pinterestAccessToken String? @db.Text
   pinterestBoardId     String? @db.VarChar(100)
+
+  // Hero Motion Background & Media Controller
+  heroOpacity          Int      @default(80) // 10 to 100 percentage
+  heroKenBurns         Boolean  @default(true) // Dynamic camera zoom / motion
+  heroCycleSeconds     Int      @default(7) // seconds per star slide
+  heroBeamsEnabled     Boolean  @default(true) // sweeping stadium beams
+  heroRadarEnabled     Boolean  @default(true) // pitch scanning laser/radar line
+  heroScoreTicker      Boolean  @default(true) // live match score ticker
 }
 
 model Keyword {
@@ -202,6 +210,7 @@ model TicketFixture {
   viagogoPrice     Int?     @default(125)
   viagogoUrl       String?  @db.VarChar(500)
   isActive         Boolean  @default(true)
+  offers           TicketOffer[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -209,4 +218,82 @@ model TicketFixture {
   @@index([tournament])
   @@index([isActive])
 }
+
+model TicketProvider {
+  id          String        @id @default(cuid())
+  name        String        @db.VarChar(100) // e.g. "SeatGeek", "StubHub", "Viagogo", "TickPick"
+  slug        String        @unique @db.VarChar(50)
+  logo        String?       @db.VarChar(500)
+  websiteUrl  String        @db.VarChar(500)
+  rating      Float         @default(4.8)
+  reviewCount Int           @default(15000)
+  isActive    Boolean       @default(true)
+  offers      TicketOffer[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([isActive])
+}
+
+model TicketOffer {
+  id               String         @id @default(cuid())
+  eventId          String
+  providerId       String
+  seatingTier      String         @db.VarChar(150) // e.g. "Category 1 Lower Longside", "VIP Hospitality"
+  tierCategory     String         @default("CAT_1") @db.VarChar(50) // CAT_1, CAT_2, CAT_3, VIP, AWAY
+  price            Float
+  originalCurrency String         @default("GBP") @db.VarChar(10)
+  originalUrl      String?        @db.VarChar(500)
+  affiliateUrl     String         @db.VarChar(500)
+  availability     String         @default("AVAILABLE") @db.VarChar(50) // AVAILABLE, LOW_STOCK, SOLD_OUT
+  isBestValue      Boolean        @default(false)
+  instantDownload  Boolean        @default(true)
+  guaranteeBadge   String         @default("100% Buyer Guarantee") @db.VarChar(100)
+  startsAt         DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  event            TicketFixture  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  provider         TicketProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([providerId])
+  @@index([price])
+}
+
+model HeroScene {
+  id                String   @id @default(cuid())
+  name              String   @db.VarChar(100) // e.g. "Lionel Messi"
+  nickname          String?  @db.VarChar(150) // "The Maestro • 8x Ballon d’Or"
+  sport             String   @default("football") @db.VarChar(50) // "football", "cricket", "basketball", etc.
+  team              String   @db.VarChar(100) // "Argentina / Inter Miami"
+  tournament        String   @db.VarChar(100) // "MLS & International Derby"
+  poseTitle         String   @db.VarChar(100) // "Iconic Heavenly Arms Celebration"
+  poseDescription   String   @db.VarChar(255) // "Two fingers raised toward the heavens in iconic matchday glory"
+  statBadge         String   @default("Superstar 🏆") @db.VarChar(100) // "World Cup Champion 🏆"
+  accentColor       String   @default("from-sky-500 via-teal-400 to-emerald-500") @db.VarChar(150)
+  borderGlow        String   @default("shadow-sky-500/30 border-sky-500/40") @db.VarChar(150)
+  image             String   @db.VarChar(500) // image url (local or remote)
+  videoUrl          String?  @db.VarChar(500) // optional mp4 / webm video loop url
+  ticketSlug        String   @default("arsenal-vs-chelsea") @db.VarChar(191)
+  order             Int      @default(0)
+  isActive          Boolean  @default(true)
+
+  // Live in-play scoreboard overlay
+  matchCompetition  String?  @default("UEFA Champions Derby") @db.VarChar(100)
+  matchMinuteOrOver String?  @default("75' IN-PLAY") @db.VarChar(50)
+  matchHomeTeam     String?  @default("MIA") @db.VarChar(50)
+  matchAwayTeam     String?  @default("NYC") @db.VarChar(50)
+  matchScore        String?  @default("2 - 1") @db.VarChar(50)
+  matchLiveAction   String?  @default("Signature free-kick curler into top corner") @db.VarChar(200)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([sport])
+  @@index([isActive])
+  @@index([order])
+}
+
 

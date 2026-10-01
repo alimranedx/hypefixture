@@ -119,10 +119,23 @@ export default function TicketComparisonEngine({
 
               {/* Vendor & Seating info */}
               <div className="space-y-1.5 flex-1 pr-4">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <span className="text-base sm:text-lg font-black text-white group-hover:text-emerald-300 transition">
                     {offer.vendorName}
                   </span>
+                  
+                  {/* SeatGeek-style Deal Score pill */}
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black border ${
+                    offer.isBestValue 
+                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm'
+                      : offer.price <= 120
+                      ? 'bg-teal-500/20 text-teal-400 border-teal-500/40'
+                      : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                  }`}>
+                    <Star className="w-3 h-3 fill-current" />
+                    <span>{offer.isBestValue ? '9.8 • Amazing Deal' : offer.price <= 120 ? '9.4 • Great Value' : '8.9 • Good Deal'}</span>
+                  </span>
+
                   <div className="flex items-center gap-1 text-amber-400 text-xs font-bold">
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                     <span>{offer.rating.toFixed(1)}</span>
@@ -153,11 +166,14 @@ export default function TicketComparisonEngine({
               <div className="flex items-center justify-between md:justify-end gap-5 mt-4 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800/80">
                 <div className="text-left md:text-right">
                   <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                    From Price
+                    Net Price (Inc. VAT)
                   </div>
                   <div className="text-2xl sm:text-3xl font-black text-white">
                     <span className="text-emerald-400">{currencySymbol}</span>
                     {offer.price}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-semibold">
+                    approx. {currency === 'GBP' ? `€${Math.round(offer.price * 1.18)}` : `£${Math.round(offer.price * 0.85)}`}
                   </div>
                 </div>
 

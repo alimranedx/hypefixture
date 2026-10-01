@@ -67,6 +67,9 @@ export default function TicketHeroCard({
 
   const currencySymbol = currency === 'GBP' ? '£' : currency === 'EUR' ? '€' : '$';
 
+  const alternatePrice =
+    currency === 'GBP' ? `€${Math.round(minPrice * 1.18)}` : `£${Math.round(minPrice * 0.85)}`;
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-950 p-6 sm:p-10 shadow-2xl">
       {/* Background ambient glow & image overlay */}
@@ -80,6 +83,9 @@ export default function TicketHeroCard({
         {/* Badges bar */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25">
+              <span>9.8 ⭐ Amazing Deal</span>
+            </div>
             <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black uppercase tracking-wider">
               {sport}
             </span>
@@ -146,8 +152,13 @@ export default function TicketHeroCard({
               <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                 Verified Tickets From
               </div>
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400">
-                {currencySymbol}{minPrice}
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-emerald-400">
+                  {currencySymbol}{minPrice}
+                </span>
+                <span className="text-xs font-bold text-slate-400">
+                  ({alternatePrice})
+                </span>
               </div>
               <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                 <Ticket className="w-3 h-3 text-emerald-400" />
@@ -157,7 +168,7 @@ export default function TicketHeroCard({
 
             <a
               href="#ticket-comparison"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95"
             >
               <span>Compare Prices</span>
               <ArrowDown className="w-4 h-4" />

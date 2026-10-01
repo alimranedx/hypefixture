@@ -15,8 +15,11 @@ import {
   Bookmark,
   ChevronDown,
   LogIn,
-  UserPlus,
   Ticket,
+  Search,
+  Heart,
+  Trophy,
+  UserPlus,
 } from 'lucide-react';
 
 import { ActiveSport } from '@/lib/sports';
@@ -46,16 +49,13 @@ export default function Navbar({ initialSports }: NavbarProps) {
     }
   }, [initialSports]);
 
-  // Construct dynamic navigation links: Match Tickets first, Live Matches second, All Fixtures, then active sports
+  // Construct dynamic navigation links: Match Tickets first, European Football & Cricket, then directory
   const sportsNav = [
-    { name: '🎟️ Match Tickets', href: '/tickets' },
-    { name: 'Live Matches', href: '/live', isLive: true },
-    { name: '🔥 All Fixtures', href: '/' },
-    ...dynamicSports.map((s) => ({
-      name: `${s.icon || '🏆'} ${s.name.split(' ')[0]}`,
-      href: `/${s.slug}`,
-      isLive: false,
-    })),
+    { name: '🎟️ Match Tickets', href: '/events' },
+    { name: '⚽ European Football', href: '/sports/football' },
+    { name: '🏏 UK & European Cricket', href: '/sports/cricket' },
+    { name: 'Live Scores', href: '/live', isLive: true },
+    { name: 'All Sports', href: '/sports' },
   ];
 
   const userRole = (session?.user as any)?.role;
@@ -69,7 +69,23 @@ export default function Navbar({ initialSports }: NavbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md">
+      {/* European Trust & Currency Ribbon */}
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-slate-800/80 py-1.5 px-4 text-center text-[11px] text-slate-300 flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+        <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+          <span>🇪🇺</span>
+          <span>Europe&apos;s Dedicated Football &amp; Cricket Ticket Marketplace</span>
+        </span>
+        <span className="hidden sm:inline text-slate-600">•</span>
+        <span className="text-slate-400 hidden sm:inline">
+          Prices in <strong className="text-white">GBP (£)</strong> &amp; <strong className="text-white">EUR (€)</strong>
+        </span>
+        <span className="hidden md:inline text-slate-600">•</span>
+        <span className="text-emerald-400 font-semibold hidden md:inline">
+          100% European FanProtect™ Guarantee &amp; Instant Mobile Transfer
+        </span>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo */}
@@ -125,11 +141,21 @@ export default function Navbar({ initialSports }: NavbarProps) {
             })}
           </nav>
 
-          {/* Right Actions: Auth, Admin, Quick CTA */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Right Actions: Search, Auth, Quick CTA */}
+          <div className="hidden md:flex items-center gap-2.5">
+            {/* Global Search Button */}
+            <Link
+              href="/search"
+              aria-label="Search events"
+              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-emerald-500/50 transition shadow-sm"
+              title="Search matches, teams, venues"
+            >
+              <Search className="w-4 h-4" />
+            </Link>
+
             {/* Find Tickets CTA */}
             <Link
-              href="/tickets"
+              href="/events"
               className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs rounded-xl shadow-md shadow-emerald-500/20 transition hover:scale-[1.02]"
             >
               <Ticket className="w-3.5 h-3.5" />
@@ -167,12 +193,30 @@ export default function Navbar({ initialSports }: NavbarProps) {
                     </div>
 
                     <Link
+                      href="/favorites"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition"
+                    >
+                      <Heart className="w-4 h-4 text-rose-400" />
+                      Saved Favorites
+                    </Link>
+
+                    <Link
                       href="/dashboard"
                       onClick={() => setProfileDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition"
                     >
                       <Bookmark className="w-4 h-4 text-emerald-400" />
-                      My Saved Fixtures
+                      User Dashboard
+                    </Link>
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition"
+                    >
+                      <User className="w-4 h-4 text-sky-400" />
+                      Profile Settings
                     </Link>
 
                     <button

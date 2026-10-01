@@ -26,6 +26,7 @@ import {
   Share2,
   Trophy,
   Ticket,
+  Film,
 } from 'lucide-react';
 import { useAdmin } from '@/context/AdminContext';
 
@@ -101,6 +102,14 @@ export default function AdminSidebar(props: AdminSidebarProps) {
       href: '/admin/tickets',
       icon: Ticket,
       desc: 'European fixtures & live prices',
+      highlight: true,
+    },
+    {
+      id: 'hero',
+      name: 'Hero & Backgrounds',
+      href: '/admin/hero',
+      icon: Film,
+      desc: 'Moving match video & star poses',
       highlight: true,
     },
     {

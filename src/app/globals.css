@@ -39,3 +39,119 @@ body {
   color: inherit !important;
 }
 
+/* Cinematic Stadium Hero Motion Keyframes */
+@keyframes kenburns-1 {
+  0% {
+    transform: scale(1.02) translate(0%, 0%);
+  }
+  50% {
+    transform: scale(1.10) translate(-1.5%, -1.2%);
+  }
+  100% {
+    transform: scale(1.18) translate(-3%, -2%);
+  }
+}
+
+@keyframes kenburns-2 {
+  0% {
+    transform: scale(1.18) translate(-2.5%, 1%);
+  }
+  50% {
+    transform: scale(1.09) translate(1%, -0.8%);
+  }
+  100% {
+    transform: scale(1.02) translate(0%, 0%);
+  }
+}
+
+@keyframes kenburns-3 {
+  0% {
+    transform: scale(1.04) translate(1.5%, 0.5%);
+  }
+  50% {
+    transform: scale(1.12) translate(-1%, -1.5%);
+  }
+  100% {
+    transform: scale(1.19) translate(-2%, 1%);
+  }
+}
+
+@keyframes stadium-beam-sweep {
+  0% {
+    transform: translateX(-45%) rotate(-18deg);
+    opacity: 0.12;
+  }
+  50% {
+    transform: translateX(45%) rotate(18deg);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateX(-45%) rotate(-18deg);
+    opacity: 0.12;
+  }
+}
+
+@keyframes stadium-glow-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.12);
+  }
+}
+
+.animate-kenburns-1 {
+  animation: kenburns-1 12s ease-in-out infinite alternate;
+}
+
+.animate-kenburns-2 {
+  animation: kenburns-2 12s ease-in-out infinite alternate;
+}
+
+.animate-kenburns-3 {
+  animation: kenburns-3 12s ease-in-out infinite alternate;
+}
+
+.animate-stadium-beam {
+  animation: stadium-beam-sweep 16s ease-in-out infinite;
+}
+
+.animate-stadium-pulse {
+  animation: stadium-glow-pulse 8s ease-in-out infinite;
+}
+
+@keyframes player-float {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+@keyframes broadcast-scan {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(200%);
+    opacity: 0;
+  }
+}
+
+.animate-player-float {
+  animation: player-float 5s ease-in-out infinite;
+}
+
+.animate-broadcast-scan {
+  animation: broadcast-scan 6s ease-in-out infinite;
+}
+
+
+

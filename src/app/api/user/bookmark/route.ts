@@ -40,3 +40,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ bookmarked: true, bookmark: created });
   }
 }
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+
+  if (!userId) {
+    return NextResponse.json({ success: false, favorites: [] }, { status: 401 });
+  }
+
+  const favorites = await prisma.bookmark.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return NextResponse.json({ success: true, favorites });
+}
+
