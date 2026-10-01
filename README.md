@@ -1,26 +1,29 @@
-# HypeFixture
+# TicketFixture
 
-> Automated High-CTR Sports SEO & Affiliate Marketing Platform powered by Next.js 16 (App Router), Google Gemini 3.8 Flash, Prisma ORM (MySQL), and Tailwind CSS v4.
+> High-Demand European Football & Sports Matchday Ticket Aggregator powered by Next.js 16 (App Router), Prisma ORM (MySQL), Google Gemini AI, and Tailwind CSS v4.
 
 ## Overview
 
-HypeFixture is a high-performance sports media and affiliate aggregation platform designed to capture high-intent search traffic ("how to watch", "live stream channels", "match predictions", "lineups") across Football (Soccer), NFL, NBA, UFC, and Boxing.
+**TicketFixture** (https://ticketfixture.com) is a high-performance sports ticket price comparison aggregator designed to help international fans and sports tourists compare verified matchday tickets across accredited secondary exchanges like **SeatGeek**, **StubHub**, and **Viagogo** with 100% money-back buyer guarantees.
+
+The platform specializes in high-margin, sold-out European football blockbusters (Premier League derbies, El Clásico, and UEFA Champions League) as well as major global cricket fixtures.
 
 ## Key Features
 
-- **Autonomous Matchday Cluster Generation**: Google Gemini 3.8 Flash creates keyword-optimized match previews, "where to watch" broadcast guides, and predicted lineups.
-- **Admin Management Portal**: Dedicated `/admin/dashboard` featuring live AI telemetry monitoring, affiliate partner management, SERP keyword tracking, and role-based access control.
-- **In-Admin Article Editor**: Rich markdown/HTML editor with automated DOMPurify sanitization against XSS injections, H2/H3 formatting, affiliate CTA insertions, and live preview.
-- **Strict Role Isolation**: Separated authentication flows for regular users and administrators.
-- **High-CTR Affiliate Engine**: Cloaked redirects (`/go/[partner]`) tracking click-through rates and geo-targeted streaming partners.
+- **Dynamic Ticket Comparison Engine**: Live price comparison across SeatGeek, StubHub, and Viagogo with automated "Best Value" and "100% Buyer Guarantee" badges.
+- **Dedicated Match Tickets Admin Hub** (`/admin/tickets`): Dynamically add new fixtures, set live secondary marketplace prices, update direct affiliate deep-links, and toggle availability.
+- **Stadium Seating Breakdown**: Category 1 (Longside / Sideline), Category 2 (Upper Tier), Category 3 (Behind Goal), and VIP Club hospitality tier guides for marquee stadiums (Emirates, Bernabéu, Etihad, etc.).
+- **Cloaked Affiliate Redirection Router** (`/go/[partner]`): SEO-safe outbound tracking links protected with `noindex, nofollow` headers to safeguard search engine rankings.
+- **Autonomous AI Editorial Studio**: Powered by Google Gemini to publish match previews, lineups, and stadium tourist guides.
+- **Admin Management Portal**: Role-based access control (Admin & Super Admin), keyword SERP rank tracking, and instant IndexNow search engine syndication.
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router, Turbopack, React 19)
 - **Database & ORM**: MySQL via Prisma ORM
-- **AI Engine**: Google GenAI SDK (`gemini-3.8-flash`)
+- **AI Engine**: Google GenAI SDK (`@google/genai`)
 - **Styling**: Tailwind CSS v4
-- **Security**: Isomorphic DOMPurify & Content Security Headers
+- **Security**: Isomorphic DOMPurify & Security Headers
 - **Authentication**: NextAuth.js v4
 
 ## Getting Started
@@ -32,8 +35,8 @@ HypeFixture is a high-performance sports media and affiliate aggregation platfor
 
 2. **Configure environment variables** in `.env`:
    ```env
-   DATABASE_URL="mysql://root:@127.0.0.1:3306/hypefixture"
-   NEXTAUTH_SECRET="your-nextauth-secret"
+   DATABASE_URL="mysql://root:@localhost:3306/hypefixture"
+   NEXTAUTH_SECRET="ticketfixture_secure_nextauth_secret_key_2026"
    NEXTAUTH_URL="http://localhost:3000"
    GEMINI_API_KEY="your-google-gemini-api-key"
    ```
@@ -41,7 +44,7 @@ HypeFixture is a high-performance sports media and affiliate aggregation platfor
 3. **Database Setup**:
    ```bash
    npx prisma db push
-   npm run seed
+   npx tsx prisma/seed.ts
    ```
 
 4. **Run Application**:
@@ -53,3 +56,7 @@ HypeFixture is a high-performance sports media and affiliate aggregation platfor
    npm run build
    npm run start
    ```
+
+## Affiliate Documentation
+
+For complete directions on getting approved with **StubHub International / Viagogo** (via Awin) and **SeatGeek** (via Impact), refer to the [Affiliate Partner Master Guide](affiliate_partner.md).
